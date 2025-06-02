@@ -4,9 +4,11 @@ const User = require("../models/user");
 const LocalStrategy = require("passport-local");
 const bcrypt = require("bcrypt");
 const Category = require("../models/category");
+const BookKeeping = require("../models/bookKeeping");
 
 passport.serializeUser((user, done) => {
   console.log("Serialize使用者");
+  // console.log("serializeUser使用者的id: ", user._id);
   done(null, user._id); // 將mongoDB的id，存在session內
   // 並且將id簽名後，以Cookie的形式給使用者
 });
@@ -16,6 +18,7 @@ passport.deserializeUser(async (_id, done) => {
     "Deserialize使用者。。。使用serializeIser儲存的id，去找到資料庫內的資料"
   );
   let foundUser = await User.findOne({ _id }).exec();
+  // console.log("deserializeUser使用者的資料: ", foundUser);
   done(null, foundUser); // 將資料庫的資料，放在req.user內
 });
 
@@ -29,7 +32,7 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       console.log("進入Google Strategy的區域");
-      // console.log(profile);
+      // console.log("profile: ",profile);
       // console.log("==========================");
       let foundUser = await User.findOne({ googleId: profile.id }).exec();
       let foundEmail = await User.findOne({
@@ -74,6 +77,79 @@ passport.use(
           category.save();
         });
         // ------------------------------------------------------------
+        // ---------------------將預設記帳本存入資料庫-------------------
+        const years = [2024, 2025]; // 用於設定有預設記帳本的年齡
+        const bookInfo = [
+          {
+            name: "1月記帳本",
+            description: "這是一個範例視圖，您可以在此處添加任何內容。",
+          },
+          {
+            name: "2月記帳本",
+            description: "這是一個範例視圖，您可以在此處添加任何內容。",
+          },
+          {
+            name: "3月記帳本",
+            description: "這是一個範例視圖，您可以在此處添加任何內容。",
+          },
+          {
+            name: "4月記帳本",
+            description: "這是一個範例視圖，您可以在此處添加任何內容。",
+          },
+          {
+            name: "5月記帳本",
+            description: "這是一個範例視圖，您可以在此處添加任何內容。",
+          },
+          {
+            name: "6月記帳本",
+            description: "這是一個範例視圖，您可以在此處添加任何內容。",
+          },
+          {
+            name: "7月記帳本",
+            description: "這是一個範例視圖，您可以在此處添加任何內容。",
+          },
+          {
+            name: "8月記帳本",
+            description: "這是一個範例視圖，您可以在此處添加任何內容。",
+          },
+          {
+            name: "9月記帳本",
+            description: "這是一個範例視圖，您可以在此處添加任何內容。",
+          },
+          {
+            name: "10月記帳本",
+            description: "這是一個範例視圖，您可以在此處添加任何內容。",
+          },
+          {
+            name: "11月記帳本",
+            description: "這是一個範例視圖，您可以在此處添加任何內容。",
+          },
+          {
+            name: "12月記帳本",
+            description: "這是一個範例視圖，您可以在此處添加任何內容。",
+          },
+        ];
+
+        for (const year of years) {
+          // 由於forEach不會等待async完成，所以使用for...of
+          for (let i = 0; i < bookInfo.length; i++) {
+            const book = bookInfo[i];
+            try {
+              const newBook = new BookKeeping({
+                name: book.name,
+                date: new Date(`${year}-${String(i + 1).padStart(2, "0")}-01`),
+                description: book.description,
+                user: savedUser._id,
+              });
+              // console.log(newBook);
+              console.log(await newBook.save());
+            } catch (e) {
+              console.log(e);
+            }
+          }
+        }
+
+        // ------------------------------------------------------------
 
         console.log("成功創建用戶。");
         done(null, savedUser);
@@ -82,7 +158,7 @@ passport.use(
   )
 );
 
-// 本地登入策略
+// 本地登入策略(只有本地登入，沒有本地註冊，因為註冊已經在auth-routes.js內處理了)
 passport.use(
   new LocalStrategy(
     {

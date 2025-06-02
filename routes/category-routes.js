@@ -4,6 +4,8 @@ const Category = require("../models/category.js");
 const mongoose = require("mongoose");
 const User = require("../models/user");
 
+// const userId = '6815c5bd9bc92882cefd2306'; // 測試用
+
 router.get("/getCategories", async (req, res) => {
   try {
     const userId = req.user._id;
@@ -21,7 +23,7 @@ router.post("/update", async (req, res) => {
     const incomeCategories = req.body.incomeCategories;
     const expenseCategories = req.body.expenseCategories;
     const userId = req.user._id;
-
+    // const userId = '6815c5bd9bc92882cefd2306'; // 測試用
     // console.log(req.body);
     // console.log(incomeCategories);
     // console.log(Array.isArray(incomeCategories));

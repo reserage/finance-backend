@@ -81,9 +81,9 @@ async function getAllDataByMonth(year, month, userId) {
   );
   // 理想格式: {expense: {food: 100, transport: 200}, income: {salary: 5000, bonus: 1000}}
 
-  const sorted = Object.entries(categoryTotals.expense).sort(
-    (a, b) => b[1] - a[1]
-  );
+  const sorted = Object.entries(categoryTotals.expense)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
 
   return {
     dataMonth: `${year}-${String(month).padStart(2, "0")}`,
@@ -96,5 +96,187 @@ async function getAllDataByMonth(year, month, userId) {
     },
   };
 }
+
+router.get("/", async (req, res) => {
+  try {
+    const userId = req.user._id;
+    // const userId = "6815c5bd9bc92882cefd2306"; // 測試用的userId
+    const { selectedDate } = req.query;
+
+    const year = selectedDate.split("-")[0];
+    const month = selectedDate.split("-")[1];
+    const allData = await getAllDataByMonth(year, month, userId);
+
+    res.json(allData);
+    return;
+  } catch (e) {
+    console.log(e);
+    return;
+  }
+});
+
+// 專門給折線圖的資料
+router.get("/line", async (req, res) => {
+  try {
+    const userId = req.user._id;
+    // const userId = "6815c5bd9bc92882cefd2306"; // 測試用的userId
+    const { selectedDate } = req.query;
+    const { spendingTrendRadio } = req.query;
+
+    const year = selectedDate.split("-")[0];
+    const month = selectedDate.split("-")[1];
+    if (spendingTrendRadio === "month") {
+      const results = await getMonthlyWeeklyTotalByUser(userId, year, month);
+
+      console.log(results);
+      res.json(results);
+      return;
+    } else if (spendingTrendRadio === "year") {
+      const results = await getMonthlyExpenseByUser(userId, year);
+      res.json(results);
+      return;
+    }
+
+    return;
+  } catch (e) {
+    console.log(e);
+    return;
+  }
+});
+
+const getMonthlyWeeklyTotalByUser = async (userId, targetYear, targetMonth) => {
+  const start = new Date(
+    `${targetYear}-${String(targetMonth).padStart(2, "0")}-01`
+  );
+  const end = new Date(start);
+  end.setMonth(end.getMonth() + 1);
+
+  const result = await Record.aggregate([
+    {
+      $match: {
+        userid: new mongoose.Types.ObjectId(userId),
+        date: {
+          $gte: start,
+          $lt: end,
+        },
+        isIncome: "expense",
+      },
+    },
+    {
+      $addFields: {
+        year: { $year: "$date" },
+        month: { $month: "$date" },
+        weekOfMonth: {
+          $ceil: {
+            $divide: [
+              {
+                $add: [
+                  { $dayOfMonth: "$date" },
+                  {
+                    $subtract: [
+                      {
+                        $dayOfWeek: {
+                          $dateTrunc: { date: "$date", unit: "month" },
+                        },
+                      },
+                      1,
+                    ],
+                  },
+                ],
+              },
+              7,
+            ],
+          },
+        },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          year: "$year",
+          month: "$month",
+          week: "$weekOfMonth",
+        },
+        totalAmount: { $sum: "$amount" },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        week: {
+          $concat: [
+            { $toString: "$_id.year" },
+            "-",
+            {
+              $toString: {
+                $cond: [
+                  { $lt: ["$_id.month", 10] },
+                  { $concat: ["0", { $toString: "$_id.month" }] },
+                  { $toString: "$_id.month" },
+                ],
+              },
+            },
+            "-W",
+            { $toString: "$_id.week" },
+          ],
+        },
+        totalAmount: 1,
+      },
+    },
+    {
+      $sort: { week: 1 },
+    },
+  ]);
+
+  return result;
+};
+
+const getMonthlyExpenseByUser = async (userId, targetYear) => {
+  const start = new Date(`${targetYear}-01-01`);
+  const end = new Date(`${targetYear + 1}-01-01`);
+
+  const result = await Record.aggregate([
+    {
+      $match: {
+        userid: new mongoose.Types.ObjectId(userId),
+        isIncome: "expense", // 只抓支出
+        date: {
+          $gte: start,
+          $lt: end,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: { year: { $year: "$date" }, month: { $month: "$date" } },
+        totalAmount: { $sum: "$amount" },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        month: {
+          $concat: [
+            { $toString: "$_id.year" },
+            "-",
+            {
+              $cond: [
+                { $lt: ["$_id.month", 10] },
+                { $concat: ["0", { $toString: "$_id.month" }] },
+                { $toString: "$_id.month" },
+              ],
+            },
+          ],
+        },
+        totalAmount: 1,
+      },
+    },
+    {
+      $sort: { month: 1 },
+    },
+  ]);
+
+  return result;
+};
 
 module.exports = router;

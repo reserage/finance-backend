@@ -9,6 +9,7 @@ const authRoutes = require("./routes/auth-routes");
 const testRoutes = require("./routes/test-routes");
 const categoryRoutes = require("./routes/category-routes");
 const statisticsRoutes = require("./routes/statistics-routes");
+const bookKeepingRoutes = require("./routes/bookKeeping-routes");
 require("./config/passport");
 const passport = require("passport");
 
@@ -41,6 +42,7 @@ app.use("/auth", authRoutes);
 app.use("/test", testRoutes);
 app.use("/category", categoryRoutes);
 app.use("/statistics", statisticsRoutes);
+app.use("/bookKeeping", bookKeepingRoutes);
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/finance")
