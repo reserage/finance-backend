@@ -59,23 +59,24 @@ passport.use(
         // --------------------將預設的類別存入資料庫--------------------
         let defaultIncomeCategory = ["薪水", "投資"];
         let defaultExpenseCategory = ["餐飲", "交通", "娛樂", "其他"];
-        defaultIncomeCategory.forEach((income) => {
+
+        for (const income of defaultIncomeCategory.reverse()) {
           const category = new Category({
             name: income,
             isIncome: true,
             user: savedUser._id,
           });
-          category.save();
-        });
+          await category.save();
+        }
 
-        defaultExpenseCategory.forEach((expense) => {
+        for (const expense of defaultExpenseCategory.reverse()) {
           const category = new Category({
             name: expense,
             isIncome: false,
             user: savedUser._id,
           });
-          category.save();
-        });
+          await category.save();
+        }
         // ------------------------------------------------------------
         // ---------------------將預設記帳本存入資料庫-------------------
         const years = [2024, 2025]; // 用於設定有預設記帳本的年齡

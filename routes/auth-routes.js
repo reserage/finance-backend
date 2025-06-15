@@ -29,23 +29,24 @@ router.post("/register", async (req, res) => {
     // --------------------將預設的類別存入資料庫--------------------
     let defaultIncomeCategory = ["薪水", "投資"];
     let defaultExpenseCategory = ["餐飲", "交通", "娛樂", "其他"];
-    defaultIncomeCategory.forEach((income) => {
+
+    for (const income of defaultIncomeCategory.reverse()) {
       const category = new Category({
         name: income,
         isIncome: true,
         user: savedUser._id,
       });
-      category.save();
-    });
+      await category.save();
+    }
 
-    defaultExpenseCategory.forEach((expense) => {
+    for (const expense of defaultExpenseCategory.reverse()) {
       const category = new Category({
         name: expense,
         isIncome: false,
         user: savedUser._id,
       });
-      category.save();
-    });
+      await category.save();
+    }
     // ------------------------------------------------------------
     setDefaultBook(savedUser._id);
 
@@ -58,10 +59,20 @@ router.post("/register", async (req, res) => {
 });
 
 // 登入
-router.post("/login", passport.authenticate("local", {}), (req, res) => {
-  console.log("登入成功");
-  console.log(req.user);
-  return res.status(200).send({ message: "登入成功", user: req.user });
+router.post("/login", (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) return next(err);
+
+    if (!user) {
+      // 登入失敗，info.message 就是你在 LocalStrategy 傳的 message
+      return res.status(401).json({ success: false, message: info.message });
+    }
+
+    req.logIn(user, (err) => {
+      if (err) return next(err);
+      return res.json({ success: true, user });
+    });
+  })(req, res, next);
 });
 
 router.post("/logout", (req, res) => {
@@ -165,14 +176,15 @@ async function setDefaultBook(userId) {
       },
     ];
 
-    for (const year of years) {   // 由於forEach不會等待async完成，所以使用for...of
+    for (const year of years) {
+      // 由於forEach不會等待async完成，所以使用for...of
       for (let i = 0; i < bookInfo.length; i++) {
         const book = bookInfo[i];
         try {
           const newBook = await user.addBookKeeping(
             book.name,
             `${year}-${String(i + 1).padStart(2, "0")}-01`, // 2024-01-01, 2024-02-01, ...
-            book.description,
+            book.description
           );
           console.log("newBook: ", newBook);
         } catch (e) {

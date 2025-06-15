@@ -25,6 +25,8 @@ router.post("/addRecord", async (req, res) => {
   try {
     const { category, amount, note, date, isIncome } = req.body;
     const userid = req.user._id;
+    // const userid = '6815c5bd9bc92882cefd2306';
+
     console.log("user", req.body);
     console.log("userid", req.user);
     const newRecord = new Record({
@@ -56,18 +58,73 @@ router.delete("/deleteRecord/:recordId", async (req, res) => {
   }
 });
 
+// 有ByBook的代表執行特定動作外還有特定的記帳本操作
 router.get("/getRecordsByBook", async (req, res) => {
   try {
     // 記得加入使用者
     const { bookId } = req.query;
-    console.log(bookId);
+    // console.log(bookId);
     const book = await BookKeeping.findById(bookId).populate("record");
-    console.log(book); // 這裡就是 Record 的完整陣列物件
+    // console.log(book); // 這裡就是 Record 的完整陣列物件
     return res.status(200).json({
       records: book.record,
     });
-  } catch(e) {
+  } catch (e) {
     console.log(e);
+  }
+});
+
+router.post("/addRecordByBook", async (req, res) => {
+  try {
+    const { category, amount, note, date, isIncome, bookId } = req.body;
+    const userid = req.user._id;
+    // const userid = "6815c5bd9bc92882cefd2306";
+
+    const newRecord = new Record({
+      category,
+      amount,
+      note,
+      date,
+      isIncome,
+      userid: new mongoose.Types.ObjectId(userid), // 確保userid是ObjectId類型
+    });
+
+    const savedRecord = await newRecord.save();
+
+    const updatedBook = await BookKeeping.findByIdAndUpdate(
+      bookId,
+      { $addToSet: { record: savedRecord._id } },
+      { new: true }
+    );
+    console.log("bookId: ", bookId);
+
+    console.log("savedRecord: ", savedRecord, "updatedBook: ", updatedBook);
+
+    return res.json({ message: "新增成功", savedRecord, updatedBook });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({ message: "新增失敗" });
+  }
+});
+
+router.delete("/deleteRecordByBook", async (req, res) => {
+  try {
+    const { recordId, bookId } = req.query;
+    const deletedRecord = await Record.findByIdAndDelete(recordId);
+    console.log("deletedRecord:", deletedRecord);
+
+    const updatedBook = await BookKeeping.findByIdAndUpdate(
+      bookId,
+      {
+        $pull: { record: recordId },
+      },
+      { new: true }
+    );
+
+    return res.json({ message: "刪除成功", updatedBook, deletedRecord });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({ message: "刪除失敗" });
   }
 });
 

@@ -30,8 +30,8 @@ router.get("/getbookKeepings", checkLogin, async (req, res) => {
     const userId = req.user._id;
     // const userId = "6815c5bd9bc92882cefd2306"; // 測試用
     const user = await User.findById(userId);
-    console.log(user);
-    console.log(year);
+    // console.log(user);
+    // console.log(year);
 
     const gotBookKeeping = await user.getBookKeepingsByYear(year);
     // console.log("gotBookKeeping", gotBookKeeping);

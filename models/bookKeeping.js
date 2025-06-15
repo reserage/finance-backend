@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Category = require("./category");
 
 const bookKeepingSchema = new mongoose.Schema({
   name: {
@@ -18,10 +19,18 @@ const bookKeepingSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  record: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Record",
-  }],
+  record: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Record",
+    },
+  ],
+  category: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+    },
+  ],
 });
 
 const BookKeeping = mongoose.model("BookKeeping", bookKeepingSchema);
