@@ -25,12 +25,11 @@ const bookKeepingSchema = new mongoose.Schema({
       ref: "Record",
     },
   ],
-  category: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-    },
-  ],
+  categoryBudget: {
+    type: Map,
+    of: Number,
+    default: {},
+  },
 });
 
 const BookKeeping = mongoose.model("BookKeeping", bookKeepingSchema);

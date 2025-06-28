@@ -104,4 +104,35 @@ router.delete("/deleteCategory/:id", async (req, res) => {
   }
 });
 
+router.put("/setCategoryBudget", async (req, res) => {
+  const { bookId, setCategoryBudgetId, budgetValue } = req.body;
+  try {
+    const bookKeeping = await BookKeeping.findById(bookId);
+    if (!bookKeeping)
+      return res.status(404).json({ message: "BookKeeping not found" });
+
+    console.log(
+      "bookId: ",
+      bookId,
+      "setCategoryBudgetId: ",
+      setCategoryBudgetId,
+      "budgetValue: ",
+      budgetValue
+    );
+    bookKeeping.categoryBudget.set(setCategoryBudgetId, budgetValue);
+    await bookKeeping.save();
+
+    return res.json({
+      message: "預算設定成功",
+      categoryAndBudget: bookKeeping.categoryBudget.get(
+        setCategoryBudgetId.toString()
+      ),
+      temp: bookKeeping.categoryBudget,
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({ message: "預算設定失敗" });
+  }
+});
+
 module.exports = router;

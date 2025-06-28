@@ -45,7 +45,10 @@ app.use("/statistics", statisticsRoutes);
 app.use("/bookKeeping", bookKeepingRoutes);
 
 mongoose
-  .connect("mongodb://127.0.0.1:27017/finance")
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlparser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     console.log("成功連接mongoDB....");
   })
