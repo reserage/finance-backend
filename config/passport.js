@@ -29,7 +29,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.FRONTEND_API_URL}/auth/google/redirect`,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:8000/auth/google/redirect", // 如果沒有設定環境變數，則使用預設值
     },
     async (accessToken, refreshToken, profile, done) => {
       console.log("進入Google Strategy的區域");
