@@ -1,3 +1,4 @@
+require("dotenv").config(); // 這行程式碼會讀取.env檔案中的環境變數
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20");
 const User = require("../models/user");
@@ -28,7 +29,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:5000/auth/google/redirect",
+      callbackURL: `${process.env.FRONTEND_API_URL}/auth/google/redirect`,
     },
     async (accessToken, refreshToken, profile, done) => {
       console.log("進入Google Strategy的區域");
