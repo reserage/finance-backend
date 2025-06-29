@@ -1,3 +1,4 @@
+require("dotenv").config(); // 這行程式碼會讀取.env檔案中的環境變數
 const express = require("express");
 const router = express.Router();
 const User = require("../models/user.js");
@@ -108,10 +109,10 @@ router.get(
 router.get(
   "/google/redirect",
   passport.authenticate("google", {
-    failureRedirect: "http://localhost:8080/auth/login",
+    failureRedirect: `${process.env.FRONTEND_API_URL}/auth/login`,
   }),
   (req, res) => {
-    res.redirect("http://localhost:8080/"); // 登入成功後，導向前端的網址
+    res.redirect(process.env.FRONTEND_API_URL); // 登入成功後，導向前端的網址
   }
 );
 
