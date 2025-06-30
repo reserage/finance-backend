@@ -24,12 +24,22 @@ app.use(
   })
 );
 app.use(cookieParser(process.env.MYCOOKIESECRETKEY)); // cookie解析器
+
+// 信任代理伺服器，這對於使用HTTPS的環境是必要的
+// (如果沒有這個Express可能會將HTTPS錯誤認為是HTTP)
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1); // 僅部署環境啟用
+}
+
 app.use(
   session({
     secret: process.env.MYSESSIONSECRETKEY, // 用來加密session的字串
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false },
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // 當secure: true時，cookie只能透過HTTPS傳送
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    },
   })
 ); // session解析器
 app.use(passport.initialize());
@@ -45,10 +55,13 @@ app.use("/statistics", statisticsRoutes);
 app.use("/bookKeeping", bookKeepingRoutes);
 
 mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlparser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(
+    "mongodb+srv://reserage:ytBXMjukGJNQP1Rg@graduationspecial.aiqhin0.mongodb.net/finance?retryWrites=true&w=majority&appName=graduationSpecial",
+    {
+      useNewUrlparser: true,
+      useUnifiedTopology: true,
+    }
+  )
   .then(() => {
     console.log("成功連接mongoDB....");
   })
