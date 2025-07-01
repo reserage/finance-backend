@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
+const MongoStore = require("connect-mongo"); // 用於將session存儲在MongoDB中
 const flash = require("connect-flash");
 const authRoutes = require("./routes/auth-routes");
 const testRoutes = require("./routes/test-routes");
@@ -36,6 +37,9 @@ app.use(
     secret: process.env.MYSESSIONSECRETKEY, // 用來加密session的字串
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+    }),
     cookie: {
       secure: process.env.NODE_ENV === "production", // 當secure: true時，cookie只能透過HTTPS傳送
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
