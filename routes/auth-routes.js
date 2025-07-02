@@ -79,8 +79,19 @@ router.post("/login", (req, res, next) => {
 router.post("/logout", (req, res) => {
   req.logOut((err) => {
     if (err) return res.send(err);
-    console.log("登出成功");
-    return res.status(200).send({ message: "成功登出" });
+
+    // 清除session
+    req.session.destroy((err) => {
+      if (err) return res.status(500).send({ error: "登出失敗", err });
+      console.log("Session已清除");
+      // 清除cookie
+      res.clearCookie("finance-session-id", {
+        path: "/",
+      });
+      console.log("Cookie已清除");
+      console.log("登出成功");
+      return res.status(200).send({ message: "成功登出" });
+    });
   });
 });
 

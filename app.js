@@ -37,11 +37,12 @@ app.use(
     secret: process.env.MYSESSIONSECRETKEY, // 用來加密session的字串
     resave: false,
     saveUninitialized: false,
-    name:'finance-session-id', // 設定cookie的名稱
+    name: "finance-session-id", // 設定cookie的名稱
     store: MongoStore.create({
       mongoUrl: process.env.MONGODB_URI,
     }),
     cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 設定cookie的有效期為7天
       secure: process.env.NODE_ENV === "production", // 當secure: true時，cookie只能透過HTTPS傳送
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     },
