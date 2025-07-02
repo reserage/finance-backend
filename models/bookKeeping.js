@@ -19,6 +19,10 @@ const bookKeepingSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  isDefault: {
+    type: Boolean,
+    default: false,
+  },
   record: [
     {
       type: mongoose.Schema.Types.ObjectId,

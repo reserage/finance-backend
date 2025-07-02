@@ -84,7 +84,7 @@ router.post("/logout", (req, res) => {
   });
 });
 
-router.post("/checkSession", (req, res) => {
+router.get("/checkSession", (req, res) => {
   console.log(req.session);
 });
 

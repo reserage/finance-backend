@@ -29,7 +29,9 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/auth/google/redirect", // 如果沒有設定環境變數，則使用預設值
+      callbackURL:
+        process.env.GOOGLE_CALLBACK_URL ||
+        "http://localhost:5000/auth/google/redirect", // 如果沒有設定環境變數，則使用預設值
     },
     async (accessToken, refreshToken, profile, done) => {
       console.log("進入Google Strategy的區域");
@@ -142,6 +144,7 @@ passport.use(
                 date: new Date(`${year}-${String(i + 1).padStart(2, "0")}-01`),
                 description: book.description,
                 user: savedUser._id,
+                isDefault: true,
               });
               // console.log(newBook);
               console.log(await newBook.save());

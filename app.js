@@ -37,6 +37,7 @@ app.use(
     secret: process.env.MYSESSIONSECRETKEY, // 用來加密session的字串
     resave: false,
     saveUninitialized: false,
+    name:'finance-session-id', // 設定cookie的名稱
     store: MongoStore.create({
       mongoUrl: process.env.MONGODB_URI,
     }),
