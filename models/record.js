@@ -4,7 +4,6 @@ const recordSchema = new mongoose.Schema({
   category: {
     type: String,
     require: true,
-    minlength: 2,
   },
   amount: {
     type: Number,

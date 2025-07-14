@@ -4,6 +4,7 @@ const User = require("../models/user.js");
 const mongoose = require("mongoose");
 const Record = require("../models/record.js");
 const BookKeeping = require("../models/bookKeeping.js");
+const Budget = require("../models/budget.js");
 
 router.get("/getRecords", async (req, res) => {
   try {
@@ -70,59 +71,107 @@ router.get("/getRecordsByBook", async (req, res) => {
       records: book.record,
     });
   } catch (e) {
-    console.log(e);
+    return res.status(500).send({ message: "載入記帳失敗" });
   }
 });
 
 router.post("/addRecordByBook", async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const { category, amount, note, date, isIncome, bookId } = req.body;
+    const { category, amount, note, date, bookId, categoryId } = req.body;
+    const isIncome = String(req.body.isIncome).toLowerCase() === "true";
     const userid = req.user._id;
     // const userid = "6815c5bd9bc92882cefd2306";
 
-    const newRecord = new Record({
-      category,
-      amount,
-      note,
-      date,
-      isIncome,
-      userid: new mongoose.Types.ObjectId(userid), // 確保userid是ObjectId類型
-    });
-
-    const savedRecord = await newRecord.save();
+    const newRecord = await Record.create(
+      [
+        {
+          category,
+          amount,
+          note,
+          date,
+          isIncome,
+          userid: new mongoose.Types.ObjectId(userid), // 確保userid是ObjectId類型
+        },
+      ],
+      { session }
+    );
 
     const updatedBook = await BookKeeping.findByIdAndUpdate(
       bookId,
-      { $addToSet: { record: savedRecord._id } },
-      { new: true }
+      { $addToSet: { record: newRecord[0]._id } },
+      { session }
     );
+
+    const updateField = isIncome
+      ? `totalIncomeByCategory.${categoryId}`
+      : `totalSpendingByCategory.${categoryId}`;
+
+    // 對該記帳本的預算document中的totalSpendingByCategory對應類別進行增加 ---------------------
+    const budgetDocument = await Budget.findOneAndUpdate(
+      {
+        bookkeeping: bookId,
+        user: userid,
+      },
+      { $inc: { [updateField]: amount } },
+      { upsert: true, session }
+    );
+
+    // --------------------------------------------------------------------------
     console.log("bookId: ", bookId);
+    console.log("newRecord: ", newRecord, "updatedBook: ", updatedBook);
 
-    console.log("savedRecord: ", savedRecord, "updatedBook: ", updatedBook);
+    await session.commitTransaction();
+    session.endSession();
 
-    return res.json({ message: "新增成功", savedRecord, updatedBook });
+    return res.json({ message: "新增成功", newRecord, updatedBook });
   } catch (e) {
+    await session.abortTransaction();
+    session.endSession();
     console.log(e);
     return res.status(500).send({ message: "新增失敗" });
   }
 });
 
 router.delete("/deleteRecordByBook", async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const { recordId, bookId } = req.query;
-    const deletedRecord = await Record.findByIdAndDelete(recordId);
+    const { recordId, bookId, categoryId, amount } = req.query;
+    const isIncome = String(req.query.isIncome).toLowerCase() === "true";
+    const userId = req.user._id;
+    const deletedRecord = await Record.findByIdAndDelete(recordId, { session });
     console.log("deletedRecord:", deletedRecord);
+    console.log("categoryId: ", categoryId);
 
     const updatedBook = await BookKeeping.findByIdAndUpdate(
       bookId,
       {
         $pull: { record: recordId },
       },
-      { new: true }
+      { new: true, session }
     );
+
+    const updateField = isIncome
+      ? `totalIncomeByCategory.${categoryId}`
+      : `totalSpendingByCategory.${categoryId}`;
+
+    await Budget.updateOne(
+      { user: userId, bookkeeping: bookId },
+      { $inc: { [updateField]: -amount } },
+      { session }
+    );
+
+    await session.commitTransaction();
+    session.endSession();
 
     return res.json({ message: "刪除成功", updatedBook, deletedRecord });
   } catch (e) {
+    await session.abortTransaction();
+    session.endSession();
     console.log(e);
     return res.status(500).send({ message: "刪除失敗" });
   }

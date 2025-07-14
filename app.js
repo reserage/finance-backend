@@ -11,6 +11,7 @@ const testRoutes = require("./routes/test-routes");
 const categoryRoutes = require("./routes/category-routes");
 const statisticsRoutes = require("./routes/statistics-routes");
 const bookKeepingRoutes = require("./routes/bookKeeping-routes");
+const budgetRoutes = require("./routes/budget-routes");
 require("./config/passport");
 const passport = require("passport");
 
@@ -59,15 +60,13 @@ app.use("/test", testRoutes);
 app.use("/category", categoryRoutes);
 app.use("/statistics", statisticsRoutes);
 app.use("/bookKeeping", bookKeepingRoutes);
+app.use("/budget", budgetRoutes);
 
 mongoose
-  .connect(
-    "mongodb+srv://reserage:ytBXMjukGJNQP1Rg@graduationspecial.aiqhin0.mongodb.net/finance?retryWrites=true&w=majority&appName=graduationSpecial",
-    {
-      useNewUrlparser: true,
-      useUnifiedTopology: true,
-    }
-  )
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlparser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     console.log("成功連接mongoDB....");
   })
