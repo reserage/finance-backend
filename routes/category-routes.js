@@ -70,6 +70,7 @@ router.post("/update", async (req, res) => {
   }
 });
 
+//* 新增分類現在使用這個路由
 router.post("/addCategory", async (req, res) => {
   try {
     const { name, isIncome } = req.body;
@@ -181,5 +182,31 @@ router.get("/getCategoriesBudgetByBook", async (req, res) => {
     return res.status(500).json({ message: "取得預算失敗" });
   }
 });
+
+// desc: 修改分類的路由
+router.patch("/modifyCategory/:id", async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+    const { name, isIncome } = req.body;
+    const userId = req.user._id;
+
+    const updatedCategory = await Category.findOneAndUpdate(
+      { _id: categoryId, user: userId },
+      { name, isIncome },
+      { new: true }
+    );
+    if (!updatedCategory) {
+      return res.status(404).json({ message: "分類未找到" });
+    }
+    return res.json({
+      message: "分類更新成功",
+      updatedCategory,
+    });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({ message: "分類更新失敗" });
+  }
+});
+
 
 module.exports = router;

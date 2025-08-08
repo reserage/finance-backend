@@ -105,21 +105,17 @@ router.post("/addRecordByBook", async (req, res) => {
       { session }
     );
 
-    const updateField = isIncome
-      ? `totalIncomeByCategory.${categoryId}`
-      : `totalSpendingByCategory.${categoryId}`;
-
-    // 對該記帳本的預算document中的totalSpendingByCategory對應類別進行增加 ---------------------
+    //* 對該記帳本的預算document中的totalSpendingByCategory對應類別進行增加 ==============================
     const budgetDocument = await Budget.findOneAndUpdate(
       {
         bookkeeping: bookId,
         user: userid,
       },
-      { $inc: { [updateField]: amount } },
+      { $inc: { [`totalsByCategory.${categoryId}`]: Number(amount) } },
       { upsert: true, session }
     );
 
-    // --------------------------------------------------------------------------
+    //* ===============================================================================================
     console.log("bookId: ", bookId);
     console.log("newRecord: ", newRecord, "updatedBook: ", updatedBook);
 
@@ -155,13 +151,9 @@ router.delete("/deleteRecordByBook", async (req, res) => {
       { new: true, session }
     );
 
-    const updateField = isIncome
-      ? `totalIncomeByCategory.${categoryId}`
-      : `totalSpendingByCategory.${categoryId}`;
-
     await Budget.updateOne(
       { user: userId, bookkeeping: bookId },
-      { $inc: { [updateField]: -amount } },
+      { $inc: { [`totalsByCategory.${categoryId}`]: -amount } },
       { session }
     );
 

@@ -36,53 +36,42 @@ router.get("/category", async (req, res) => {
   const { bookId } = req.query;
   const userId = req.user._id;
 
-  const foundBudget = await Budget.findOneAndUpdate(
-    {
-      bookkeeping: bookId,
-      user: userId,
-    },
-    { $setOnInsert: { bookkeeping: bookId, user: userId } }, // 只有在新建立時才會觸發
-    { upsert: true, new: true }
-  );
+  try {
+    const foundBudget = await Budget.findOneAndUpdate(
+      {
+        bookkeeping: bookId,
+        user: userId,
+      },
+      { $setOnInsert: { bookkeeping: bookId, user: userId } }, // 只有在新建立時才會觸發
+      { upsert: true, new: true }
+    );
 
-  console.log(foundBudget);
+    console.log(foundBudget);
 
-  const {
-    budget = {},
-    totalSpendingByCategory = {},
-    totalIncomeByCategory = {},
-  } = foundBudget;
+    const { budget = {}, totalsByCategory = {} } = foundBudget;
 
-  console.log("budget: ", budget);
+    console.log("budget: ", budget);
 
-  let allSpendingRatio = {};
-  let allIncomeRatio = {};
+    let ratiosByCategory = {};
 
-  for (const [categoryId, spending] of totalSpendingByCategory.entries()) {
-    const budgetAmount = budget.get(categoryId);
-    console.log("budgetAmount: ", budgetAmount);
-    if (budgetAmount && budgetAmount !== 0) {
-      allSpendingRatio[categoryId] = Math.round(
-        (spending / budgetAmount) * 100
-      );
+    for (const [categoryId, spending] of totalsByCategory.entries()) {
+      const budgetAmount = budget.get(categoryId);
+      console.log("budgetAmount: ", budgetAmount);
+      if (budgetAmount && budgetAmount !== 0) {
+        ratiosByCategory[categoryId] = Math.round(
+          (spending / budgetAmount) * 100
+        );
+      }
     }
-  }
 
-  for (const [categoryId, spending] of totalIncomeByCategory.entries()) {
-    const budgetAmount = budget.get(categoryId);
-    console.log("budgetAmount: ", budgetAmount);
-    if (budgetAmount && budgetAmount !== 0) {
-      allIncomeRatio[categoryId] = Math.round((spending / budgetAmount) * 100);
-    }
+    return res.json({
+      budget,
+      ratiosByCategory,
+      totalsByCategory,
+    });
+  } catch (e) {
+    console.error("Error fetching budget:", e);
   }
-
-  return res.json({
-    allSpendingRatio,
-    allIncomeRatio,
-    budget,
-    totalIncomeByCategory,
-    totalSpendingByCategory,
-  });
 });
 
 module.exports = router;

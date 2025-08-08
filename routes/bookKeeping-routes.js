@@ -10,9 +10,16 @@ router.post("/create", checkLogin, async (req, res) => {
     console.log("req.user: ", req.user);
     const userid = req.user._id;
     // const userId = '6815c5bd9bc92882cefd2306'; // 測試用
-    const user = await User.findById(userid);
 
-    const newBookKeeping = await user.addBookKeeping(name, date, description);
+    const newBookKeeping = new BookKeeping({
+      name,
+      description,
+      date: date ? new Date(date) : new Date(), // 如果沒有提供日期，則使用當前日期
+      user: userid,
+      isDefault: false,
+      record: [],
+    });
+    newBookKeeping.save();
     console.log(newBookKeeping);
     return res.status(201).json({
       message: "記帳本建立成功",
@@ -42,17 +49,42 @@ router.get("/getbookKeepings", checkLogin, async (req, res) => {
   }
 });
 
-router.delete("/delete", checkLogin, async (req, res) => {
+router.delete("/delete/:deletedId", checkLogin, async (req, res) => {
   try {
-    const { deletedId } = req.body;
-    console.log(typeof deletedId);
-    // const userId = req.user._id;
-    const userId = "6815c5bd9bc92882cefd2306"; // 測試用
-    const user = await User.findById(userId);
-    const deletedBook = await user.deleteBookKeeping(deletedId);
+    const { deletedId } = req.params;
+    const deletedBook = await BookKeeping.findOneAndDelete({
+      _id: deletedId,
+    });
     return res.status(201).json(deletedBook);
   } catch (e) {
     console.error("Error deleting book keepings:", e);
   }
 });
+
+router.patch("/edit", checkLogin, async (req, res) => {
+  try {
+    const { bookId, name, description } = req.body;
+    const updatedBookKeeping = await BookKeeping.findByIdAndUpdate(
+      bookId,
+      {
+        name,
+        description,
+      },
+      { new: true, runValidators: true }
+    );
+    if (!updatedBookKeeping) {
+      return res.status(404).json({ message: "記帳本未找到" });
+    }
+    return res.status(200).json({
+      message: "記帳本更新成功",
+      bookKeeping: updatedBookKeeping,
+    });
+  } catch (error) {
+    console.error("Error updating book keeping:", error);
+    return res
+      .status(500)
+      .json({ message: "伺服器錯誤", error: error.message });
+  }
+});
+
 module.exports = router;

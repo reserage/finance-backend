@@ -1,21 +1,20 @@
-require("dotenv").config(); // 載入環境變數
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
-const session = require("express-session");
-const MongoStore = require("connect-mongo"); // 用於將session存儲在MongoDB中
-const flash = require("connect-flash");
-const authRoutes = require("./routes/auth-routes");
-const testRoutes = require("./routes/test-routes");
-const categoryRoutes = require("./routes/category-routes");
-const statisticsRoutes = require("./routes/statistics-routes");
-const bookKeepingRoutes = require("./routes/bookKeeping-routes");
-const budgetRoutes = require("./routes/budget-routes");
-require("./config/passport");
-const passport = require("passport");
+require('dotenv').config(); // 載入環境變數
+const express = require('express');
+const app = require('./server');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const MongoStore = require('connect-mongo'); // 用於將session存儲在MongoDB中
+const flash = require('connect-flash');
+const authRoutes = require('./routes/auth-routes');
+const testRoutes = require('./routes/test-routes');
+const categoryRoutes = require('./routes/category-routes');
+const statisticsRoutes = require('./routes/statistics-routes');
+const bookKeepingRoutes = require('./routes/bookKeeping-routes');
+const budgetRoutes = require('./routes/budget-routes');
+require('./config/passport');
+const passport = require('passport');
 
-const app = express();
 // middleware 區
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -29,8 +28,8 @@ app.use(cookieParser(process.env.MYCOOKIESECRETKEY)); // cookie解析器
 
 // 信任代理伺服器，這對於使用HTTPS的環境是必要的
 // (如果沒有這個Express可能會將HTTPS錯誤認為是HTTP)
-if (process.env.NODE_ENV === "production") {
-  app.set("trust proxy", 1); // 僅部署環境啟用
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1); // 僅部署環境啟用
 }
 
 app.use(
@@ -38,14 +37,17 @@ app.use(
     secret: process.env.MYSESSIONSECRETKEY, // 用來加密session的字串
     resave: false,
     saveUninitialized: false,
-    name: "finance-session-id", // 設定cookie的名稱
+    name: 'finance-session-id', // 設定cookie的名稱
     store: MongoStore.create({
       mongoUrl: process.env.MONGODB_URI,
     }),
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 設定cookie的有效期為7天
-      secure: process.env.NODE_ENV === "production", // 當secure: true時，cookie只能透過HTTPS傳送
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: process.env.NODE_ENV === 'production', // 當secure: true時，cookie只能透過HTTPS傳送
+      sameSite:
+        process.env.NODE_ENV === 'production'
+          ? 'none'
+          : 'lax',
     },
   })
 ); // session解析器
@@ -55,26 +57,9 @@ app.use(passport.session());
 app.use(flash());
 
 // 設定routes
-app.use("/auth", authRoutes);
-app.use("/test", testRoutes);
-app.use("/category", categoryRoutes);
-app.use("/statistics", statisticsRoutes);
-app.use("/bookKeeping", bookKeepingRoutes);
-app.use("/budget", budgetRoutes);
-
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlparser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("成功連接mongoDB....");
-  })
-  .catch((e) => {
-    console.log(e);
-  });
-
-const PORT = 5000;
-app.listen(PORT, () => {
-  console.log("伺服器在5000上進行");
-});
+app.use('/auth', authRoutes);
+app.use('/test', testRoutes);
+app.use('/category', categoryRoutes);
+app.use('/statistics', statisticsRoutes);
+app.use('/bookKeeping', bookKeepingRoutes);
+app.use('/budget', budgetRoutes);

@@ -73,7 +73,7 @@ userSchema.methods.getBookKeepingsByYear = async function (year) {
   const tmp = await BookKeeping.find({
     user: this._id,
     date: { $gte: start, $lt: end },
-  }).sort({ date: 1 });
+  }).sort({ isDefault: -1, date: 1 });
   console.log("tmp", tmp);
   return tmp;
 };

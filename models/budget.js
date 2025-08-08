@@ -19,17 +19,12 @@ const budgetSchema = new mongoose.Schema({
     of: Number,
     default: {},
   },
-  // 支出類別的總支出
-  totalSpendingByCategory: {
+  //* 存放各類別記帳的總金額
+  totalsByCategory:{
     type: Map,
     of: Number,
     default: {},
-  },
-  totalIncomeByCategory: {
-    type: Map,
-    of: Number,
-    default: {},
-  },
+  }
 });
 
 const budget = mongoose.model("budget", budgetSchema);

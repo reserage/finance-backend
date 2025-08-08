@@ -19,8 +19,8 @@ const recordSchema = new mongoose.Schema({
     default: Date.now,
   },
   isIncome: {
-    type: String,
-    default: "expense",
+    type: Boolean,
+    default: false,
   },
   userid: { // 這個一定要有，用他來區分每個使用者的資料
     type: mongoose.Schema.Types.ObjectId,
