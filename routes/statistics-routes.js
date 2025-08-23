@@ -1,18 +1,18 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const mongoose = require("mongoose");
-const User = require("../models/user.js");
-const Record = require("../models/record.js");
+const mongoose = require('mongoose');
+const User = require('../models/user.js');
+const Record = require('../models/record.js');
 
-router.get("/init", async (req, res) => {
+router.get('/init', async (req, res) => {
   // 要判斷該月份有沒有記帳
   try {
     const userId = req.user._id; // 前端傳來的userId
 
     // const userId = "6815c5bd9bc92882cefd2306"; // 測試用的userId
-    const user = await User.findOne({ _id: userId }).populate("records");
+    const user = await User.findOne({ _id: userId }).populate('records');
 
-    const recordsDate = await Record.find({ userid: userId }).select("date");
+    const recordsDate = await Record.find({ userid: userId }).select('date');
 
     // 給下拉選擇月份標籤，只有在有該月份的記帳時才提供該月份的標籤(mongoDB內)--------------------
     const uniqueMonths = new Set(); // 利用 Set 特性存放不重複月份
@@ -21,7 +21,7 @@ router.get("/init", async (req, res) => {
       const date = new Date(record.date);
       const yearMonth = `${date.getFullYear()}-${String(
         date.getMonth() + 1
-      ).padStart(2, "0")}`;
+      ).padStart(2, '0')}`;
       uniqueMonths.add(yearMonth);
     });
 
@@ -29,8 +29,8 @@ router.get("/init", async (req, res) => {
     // --------------------------------------------------------------------------------------
 
     // console.log(recordsDate);
-    const year = sortedMonths[sortedMonths.length - 1].split("-")[0];
-    const month = sortedMonths[sortedMonths.length - 1].split("-")[1];
+    const year = sortedMonths[sortedMonths.length - 1].split('-')[0];
+    const month = sortedMonths[sortedMonths.length - 1].split('-')[1];
     const allData = await getAllDataByMonth(year, month, userId);
 
     res.json({ months: sortedMonths, allData });
@@ -50,21 +50,22 @@ async function getAllDataByMonth(year, month, userId) {
     userid: userId,
     date: { $gte: startDate, $lt: endDate },
   });
+  console.log(records);
 
   // 計算總收入和總支出
   const totalIncome = records.reduce((sum, record) => {
-    return sum + (record.isIncome === "income" ? record.amount : 0);
+    return sum + (record.isIncome === true ? record.amount : 0);
   }, 0);
 
   const totalExpense = records.reduce((sum, record) => {
-    return sum + (record.isIncome === "expense" ? record.amount : 0);
+    return sum + (record.isIncome === false ? record.amount : 0);
   }, 0);
 
   // 計算各個類別的總收入和總支出
   const categoryTotals = records.reduce(
     (totals, record) => {
       const category = record.category;
-      if (record.isIncome === "income") {
+      if (record.isIncome === 'income') {
         if (!totals.income[category]) {
           totals.income[category] = 0;
         }
@@ -86,7 +87,7 @@ async function getAllDataByMonth(year, month, userId) {
     .slice(0, 5);
 
   return {
-    dataMonth: `${year}-${String(month).padStart(2, "0")}`,
+    dataMonth: `${year}-${String(month).padStart(2, '0')}`,
     data: {
       expense: categoryTotals.expense,
       income: categoryTotals.income,
@@ -97,14 +98,14 @@ async function getAllDataByMonth(year, month, userId) {
   };
 }
 
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const userId = req.user._id;
     // const userId = "6815c5bd9bc92882cefd2306"; // 測試用的userId
     const { selectedDate } = req.query;
 
-    const year = selectedDate.split("-")[0];
-    const month = selectedDate.split("-")[1];
+    const year = selectedDate.split('-')[0];
+    const month = selectedDate.split('-')[1];
     const allData = await getAllDataByMonth(year, month, userId);
 
     res.json(allData);
@@ -116,22 +117,21 @@ router.get("/", async (req, res) => {
 });
 
 // 專門給折線圖的資料
-router.get("/line", async (req, res) => {
+router.get('/line', async (req, res) => {
   try {
     const userId = req.user._id;
     // const userId = "6815c5bd9bc92882cefd2306"; // 測試用的userId
-    const { selectedDate } = req.query;
-    const { spendingTrendRadio } = req.query;
+    const { selectedDate, spendingTrendRadio } = req.query;
 
-    const year = selectedDate.split("-")[0];
-    const month = selectedDate.split("-")[1];
-    if (spendingTrendRadio === "month") {
+    const year = selectedDate.split('-')[0];
+    const month = selectedDate.split('-')[1];
+    if (spendingTrendRadio === 'month') {
       const results = await getMonthlyWeeklyTotalByUser(userId, year, month);
 
-      console.log(results);
+      console.log('results: ',results);
       res.json(results);
       return;
-    } else if (spendingTrendRadio === "year") {
+    } else if (spendingTrendRadio === 'year') {
       const results = await getMonthlyExpenseByUser(userId, year);
       res.json(results);
       return;
@@ -144,9 +144,11 @@ router.get("/line", async (req, res) => {
   }
 });
 
+//! 計算某使用者在指定年月中，每一週的「支出總額」，並輸出週標籤與金額列表。
+//! 每週開始日是「星期日」
 const getMonthlyWeeklyTotalByUser = async (userId, targetYear, targetMonth) => {
   const start = new Date(
-    `${targetYear}-${String(targetMonth).padStart(2, "0")}-01`
+    `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`
   );
   const end = new Date(start);
   end.setMonth(end.getMonth() + 1);
@@ -159,24 +161,24 @@ const getMonthlyWeeklyTotalByUser = async (userId, targetYear, targetMonth) => {
           $gte: start,
           $lt: end,
         },
-        isIncome: "expense",
+        isIncome: false,
       },
     },
     {
       $addFields: {
-        year: { $year: "$date" },
-        month: { $month: "$date" },
+        year: { $year: '$date' },
+        month: { $month: '$date' },
         weekOfMonth: {
           $ceil: {
             $divide: [
               {
                 $add: [
-                  { $dayOfMonth: "$date" },
+                  { $dayOfMonth: '$date' },
                   {
                     $subtract: [
                       {
                         $dayOfWeek: {
-                          $dateTrunc: { date: "$date", unit: "month" },
+                          $dateTrunc: { date: '$date', unit: 'month' },
                         },
                       },
                       1,
@@ -193,11 +195,11 @@ const getMonthlyWeeklyTotalByUser = async (userId, targetYear, targetMonth) => {
     {
       $group: {
         _id: {
-          year: "$year",
-          month: "$month",
-          week: "$weekOfMonth",
+          year: '$year',
+          month: '$month',
+          week: '$weekOfMonth',
         },
-        totalAmount: { $sum: "$amount" },
+        totalAmount: { $sum: '$amount' },
       },
     },
     {
@@ -205,19 +207,19 @@ const getMonthlyWeeklyTotalByUser = async (userId, targetYear, targetMonth) => {
         _id: 0,
         week: {
           $concat: [
-            { $toString: "$_id.year" },
-            "-",
+            { $toString: '$_id.year' },
+            '-',
             {
               $toString: {
                 $cond: [
-                  { $lt: ["$_id.month", 10] },
-                  { $concat: ["0", { $toString: "$_id.month" }] },
-                  { $toString: "$_id.month" },
+                  { $lt: ['$_id.month', 10] },
+                  { $concat: ['0', { $toString: '$_id.month' }] },
+                  { $toString: '$_id.month' },
                 ],
               },
             },
-            "-W",
-            { $toString: "$_id.week" },
+            '-W',
+            { $toString: '$_id.week' },
           ],
         },
         totalAmount: 1,
@@ -239,7 +241,7 @@ const getMonthlyExpenseByUser = async (userId, targetYear) => {
     {
       $match: {
         userid: new mongoose.Types.ObjectId(userId),
-        isIncome: "expense", // 只抓支出
+        isIncome: false, // 只抓支出
         date: {
           $gte: start,
           $lt: end,
@@ -248,8 +250,8 @@ const getMonthlyExpenseByUser = async (userId, targetYear) => {
     },
     {
       $group: {
-        _id: { year: { $year: "$date" }, month: { $month: "$date" } },
-        totalAmount: { $sum: "$amount" },
+        _id: { year: { $year: '$date' }, month: { $month: '$date' } },
+        totalAmount: { $sum: '$amount' },
       },
     },
     {
@@ -257,13 +259,13 @@ const getMonthlyExpenseByUser = async (userId, targetYear) => {
         _id: 0,
         month: {
           $concat: [
-            { $toString: "$_id.year" },
-            "-",
+            { $toString: '$_id.year' },
+            '-',
             {
               $cond: [
-                { $lt: ["$_id.month", 10] },
-                { $concat: ["0", { $toString: "$_id.month" }] },
-                { $toString: "$_id.month" },
+                { $lt: ['$_id.month', 10] },
+                { $concat: ['0', { $toString: '$_id.month' }] },
+                { $toString: '$_id.month' },
               ],
             },
           ],

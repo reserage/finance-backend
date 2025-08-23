@@ -1,18 +1,19 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const recordSchema = new mongoose.Schema({
   category: {
     type: String,
     require: true,
   },
+  //* 這一定是台幣，其他幣種用rate算出
   amount: {
     type: Number,
     require: true,
-    min: [0, "不能小於0"],
+    min: [0, '不能小於0'],
   },
   note: {
     type: String,
-    default: "",
+    default: '',
   },
   date: {
     type: Date,
@@ -22,12 +23,21 @@ const recordSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  userid: { // 這個一定要有，用他來區分每個使用者的資料
+  userid: {
+    // 這個一定要有，用他來區分每個使用者的資料
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     require: true,
+  },
+  currencyCode: {
+    type: String,
+    default: 'TWD',
+  },
+  rate: {
+    type: Number,
+    default: 1,
   },
 });
 
-const Record = mongoose.model("Record", recordSchema);
+const Record = mongoose.model('Record', recordSchema);
 module.exports = Record;

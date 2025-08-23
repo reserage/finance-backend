@@ -1,6 +1,7 @@
 require('dotenv').config(); // 載入環境變數
 const express = require('express');
-const app = require('./server');
+const app = express();
+const morgan = require('morgan'); // 用於日誌記錄
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
@@ -25,6 +26,7 @@ app.use(
   })
 );
 app.use(cookieParser(process.env.MYCOOKIESECRETKEY)); // cookie解析器
+app.use(morgan('dev'));
 
 // 信任代理伺服器，這對於使用HTTPS的環境是必要的
 // (如果沒有這個Express可能會將HTTPS錯誤認為是HTTP)
@@ -63,3 +65,21 @@ app.use('/category', categoryRoutes);
 app.use('/statistics', statisticsRoutes);
 app.use('/bookKeeping', bookKeepingRoutes);
 app.use('/budget', budgetRoutes);
+app.use(
+  '/api/v1/exchangeRate',
+  require('./routes/exchangeRate')
+);
+
+app.use((err, req, res, next) => {
+  console.log('來到錯誤處理中間件');
+
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
+
+  res.status(err.statusCode || 200).json({
+    status: err.status || 'error',
+    message: err.message || 'Internal Server Error',
+  });
+});
+
+module.exports = app;
