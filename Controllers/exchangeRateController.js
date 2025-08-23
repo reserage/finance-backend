@@ -204,7 +204,14 @@ function isTodayUTC(dateUTC) {
 
 function taiwanDateToUTC(taiwanDateStr) {
   // 明確指定台灣時區 +08:00
-  const utcDate = new Date(taiwanDateStr + 'T00:00:00+08:00');
+  const now = new Date();
+  const [year, month, day] = taiwanDateStr.split('-').map(Number);
+
+  // 用今天的時分秒，但套用台灣時區
+  const utcDate = new Date(
+    Date.UTC(year, month - 1, day, now.getHours() - 8, now.getMinutes(), now.getSeconds())
+  );
+
   return utcDate;
 }
 
