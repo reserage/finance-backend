@@ -11,7 +11,7 @@ mongoose
     console.log(e);
   });
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log('伺服器在5000上進行');
+  console.log(`伺服器在${PORT}上進行`);
 });
