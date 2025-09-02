@@ -1,0 +1,47 @@
+const mongoose = require('mongoose');
+
+const calendarEventSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, '需要使用者ID'],
+  },
+  title: {
+    type: String,
+    required: [true, '需要標題'],
+  },
+  calendarId: {
+    type: String,
+    required: [true, '需要行事曆分類'],
+  },
+  start: {
+    type: Date,
+    required: [true, '需要開始時間'],
+  },
+  end: {
+    type: Date,
+    required: [true, '需要結束時間'],
+  },
+  isAllday: {
+    type: Boolean,
+    required: [true, '需要是否為全天事件'],
+  },
+  category: {
+    type: String,
+    required: [true, '需要分類'],
+    enum: ['allday', 'time'],
+  },
+  body: {
+    type: String,
+  },
+  location: {
+    type: String,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const CalendarEvent = mongoose.model('CalendarEvent', calendarEventSchema);
+module.exports = CalendarEvent;
