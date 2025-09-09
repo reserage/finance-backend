@@ -1,5 +1,5 @@
 const express = require('express');
-const lineController = require('../Controllers/lineController');
+const lineController = require('../controllers/lineController');
 const app = express();
 
 app.post('/webhook', lineController.easyResponse);
