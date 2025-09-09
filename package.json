@@ -10,6 +10,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@line/bot-sdk": "^10.2.0",
+    "@ngrok/ngrok": "^1.5.2",
     "axios": "^1.11.0",
     "bcrypt": "^5.1.1",
     "connect-flash": "^0.1.1",

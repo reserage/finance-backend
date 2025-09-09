@@ -1,14 +1,15 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-const Record = require("./record.js");
-const Category = require("./category.js");
-const BookKeeping = require("./bookKeeping.js");
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const Record = require('./record.js');
+const Category = require('./category.js');
+const BookKeeping = require('./bookKeeping.js');
 
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    minlength: [2, "用戶名至少需要兩個字"],
-    maxLength: [20, "用戶名最長20個字"],
+    minlength: [2, '用戶名至少需要兩個字'],
+    maxLength: [20, '用戶名最長20個字'],
   },
   googleId: {
     type: String,
@@ -27,13 +28,23 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
   },
+  lineId: {
+    type: String,
+    unique: [true, '此Line帳號已被綁定'],
+  },
+  lineBindCode: {
+    type: String,
+  },
+  lineBindCodeExpireTime: {
+    type: Date,
+  },
 });
 
 // 跟使用者相關的記帳
-userSchema.virtual("records", {
-  ref: "Record",
-  localField: "_id",
-  foreignField: "userid",
+userSchema.virtual('records', {
+  ref: 'Record',
+  localField: '_id',
+  foreignField: 'userid',
 });
 
 userSchema.methods.getRecords = async function () {
@@ -41,10 +52,10 @@ userSchema.methods.getRecords = async function () {
 };
 
 // 跟使用者相關的記帳分類
-userSchema.virtual("categories", {
-  ref: "Category",
-  localField: "_id",
-  foreignField: "user",
+userSchema.virtual('categories', {
+  ref: 'Category',
+  localField: '_id',
+  foreignField: 'user',
 });
 
 userSchema.methods.getCategories = async function () {
@@ -57,10 +68,10 @@ userSchema.methods.deleteCategory = async function (categoryId) {
 };
 
 // 跟使用者相關的記帳本及其功能
-userSchema.virtual("bookKeepings", {
-  ref: "BookKeeping",
-  localField: "_id",
-  foreignField: "user",
+userSchema.virtual('bookKeepings', {
+  ref: 'BookKeeping',
+  localField: '_id',
+  foreignField: 'user',
 });
 
 userSchema.methods.getBookKeepingsByYear = async function (year) {
@@ -74,20 +85,20 @@ userSchema.methods.getBookKeepingsByYear = async function (year) {
     user: this._id,
     date: { $gte: start, $lt: end },
   }).sort({ isDefault: -1, date: 1 });
-  console.log("tmp", tmp);
+  console.log('tmp', tmp);
   return tmp;
 };
 
 userSchema.methods.addBookKeeping = async function (
   name,
   date,
-  description = ""
+  description = ''
 ) {
   const dateObj = new Date(date);
   // if (isNaN(dateObj.getTime())) {
   //   throw new Error("Invalid date format");
   // }
-  console.log("dateObj", dateObj);
+  console.log('dateObj', dateObj);
   const bookKeeping = new BookKeeping({
     name,
     date: dateObj,
@@ -100,6 +111,20 @@ userSchema.methods.addBookKeeping = async function (
 userSchema.methods.deleteBookKeeping = async function (bookId) {
   return await BookKeeping.findByIdAndDelete(bookId);
 };
-const User = mongoose.model("User", userSchema);
+
+userSchema.methods.createBindLineCode = function () {
+  const bindCode = crypto.randomBytes(4).toString('hex');
+
+  this.lineBindCode = crypto
+    .createHash('sha256')
+    .update(bindCode)
+    .digest('hex');
+
+  this.lineBindCodeExpireTime = Date.now() + 10 * 60 * 1000;
+
+  return bindCode;
+};
+
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;

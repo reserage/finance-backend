@@ -11,7 +11,7 @@ exports.getAllEvents = catchAsync(async (req, res, next) => {
   const userId = req.user._id;
   const query = req.query;
   const events = CalendarEvent.find({ userId });
-  //! 要測試
+  
   const features = new APIFeatures(events, query)
     .filter()
     .sort()

@@ -67,6 +67,7 @@ app.use('/bookKeeping', bookKeepingRoutes);
 app.use('/budget', budgetRoutes);
 app.use('/api/v1/exchangeRate', require('./routes/exchangeRate'));
 app.use('/api/v1/calendar', require('./routes/calendar-routes'));
+app.use('/api/v1/line', require('./routes/line-routes'));
 
 app.use(globalErrorHandler);
 
