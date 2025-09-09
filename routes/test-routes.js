@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const Record = require('../models/record.js');
 const BookKeeping = require('../models/bookKeeping.js');
 const Budget = require('../models/budget.js');
-const recordController = require('../controllers/recordController.js');
+const recordController = require('../Controllers/recordController.js');
 const AppError = require('../utils/appError.js');
 
 router.get('/getRecords', async (req, res) => {

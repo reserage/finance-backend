@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const exchangeRateController = require('../controllers/exchangeRateController');
+const exchangeRateController = require('../Controllers/exchangeRateController');
 
 router.get('/available', exchangeRateController.getAllAvailableCurrencies);
 
