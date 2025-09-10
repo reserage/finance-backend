@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
   lineId: {
     type: String,
     unique: [true, '此Line帳號已被綁定'],
+    sparse: true, // 允許多個 null 值
   },
   lineBindCode: {
     type: String,
