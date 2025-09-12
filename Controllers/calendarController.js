@@ -3,6 +3,7 @@ const CalendarEvent = require('../models/calenderEventModel');
 const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('../utils/APIFeatures');
 const AppError = require('../utils/appError');
+const lineScheduleService = require('../services/lineServices/lineScheduleService');
 
 exports.getAllEvents = catchAsync(async (req, res, next) => {
   if (!req.user) {
