@@ -11,7 +11,7 @@ exports.easyResponse = (req, res) => {
   );
 };
 
-function handleEvent(event) {
+async function handleEvent(event) {
   if (event.type !== 'message' || event.message.type !== 'text') {
     return Promise.resolve(null);
   }
@@ -20,7 +20,7 @@ function handleEvent(event) {
     return bindLineAccount(event);
   }
 
-  return client.replyMessage(event.replyToken, {
+  return await client.replyMessage(event.replyToken, {
     type: 'text',
     text: `你說了: ${event.message.text}`,
   });

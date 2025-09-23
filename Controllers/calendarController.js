@@ -3,7 +3,7 @@ const CalendarEvent = require('../models/calenderEventModel');
 const catchAsync = require('../utils/catchAsync');
 const APIFeatures = require('../utils/APIFeatures');
 const AppError = require('../utils/appError');
-const lineScheduleService = require('../services/lineServices/lineScheduleService');
+const eventSchedule = require('../events/eventSchedule');
 
 exports.getAllEvents = catchAsync(async (req, res, next) => {
   if (!req.user) {
@@ -12,7 +12,7 @@ exports.getAllEvents = catchAsync(async (req, res, next) => {
   const userId = req.user._id;
   const query = req.query;
   const events = CalendarEvent.find({ userId });
-  
+
   const features = new APIFeatures(events, query)
     .filter()
     .sort()
@@ -45,6 +45,7 @@ exports.createEvent = catchAsync(async (req, res, next) => {
   ) {
     return next(new AppError('Missing required fields', 400));
   }
+
   const newEvent = await CalendarEvent.create({ ...req.body, userId });
 
   res.status(201).json({
@@ -78,10 +79,14 @@ exports.updateEvent = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid event ID', 400));
   }
 
-  const updatedEvent = await CalendarEvent.findByIdAndUpdate(id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const updatedEvent = await CalendarEvent.findByIdAndUpdate(
+    id,
+    { $set: req.body },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   if (!updatedEvent) {
     return next(new AppError('Event not found', 404));

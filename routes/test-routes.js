@@ -109,12 +109,15 @@ router.post(
             date,
             isIncome,
             userid: new mongoose.Types.ObjectId(userid), // 確保userid是ObjectId類型
+            belongBookKeeping: bookId,
             currencyCode,
             rate,
           },
         ],
         { session }
       );
+
+      console.log('newRecord: ',newRecord);
 
       const updatedBook = await BookKeeping.findByIdAndUpdate(
         bookId,

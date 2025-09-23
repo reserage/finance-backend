@@ -14,9 +14,9 @@ mongoose
   });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, async() => {
-  if (process.env.NODE_ENV !== 'production')
-    ngrokConnect(PORT);
+app.listen(PORT, async () => {
+  if (process.env.NODE_ENV !== 'production') ngrokConnect(PORT);
   console.log(`伺服器在${PORT}上進行`);
   lineScheduleService.scheduleTodoNotification();
+  // lineScheduleService.sendDailySummaryToLine();
 });
