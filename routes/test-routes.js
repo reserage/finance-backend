@@ -117,8 +117,6 @@ router.post(
         { session }
       );
 
-      console.log('newRecord: ',newRecord);
-
       const updatedBook = await BookKeeping.findByIdAndUpdate(
         bookId,
         { $addToSet: { record: newRecord[0]._id } },
