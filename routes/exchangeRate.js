@@ -6,6 +6,14 @@ router.get('/available', exchangeRateController.getAllAvailableCurrencies);
 
 router.get('/popular', exchangeRateController.getPopularExchangeRates);
 
+//* 取得 台幣 對應 country 國家的匯率
+router.get(
+  '/TWD/:country',
+  exchangeRateController.countryToCurrencyCode,
+  exchangeRateController.checkAndRefreshRateData,
+  exchangeRateController.getAllExchangeRates
+);
+
 router.get(
   '/:currency',
   exchangeRateController.checkAndRefreshRateData,

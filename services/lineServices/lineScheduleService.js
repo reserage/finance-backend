@@ -77,12 +77,73 @@ async function handleTimedCalendarEvents(events) {
     });
 
     const message = {
-      type: 'text',
-      text: `行程: ${
-        event.title
-      }\n 開始時間: ${startTime}\n 結束時間: ${endTime}\n 地點: ${
-        event.location || '無'
-      }\n 描述: ${event.body || '無'}`,
+      type: 'flex',
+      altText: `📅 行程提醒：${event.title}`,
+      contents: {
+        type: 'bubble',
+        body: {
+          type: 'box',
+          layout: 'vertical',
+          contents: [
+            {
+              type: 'text',
+              text: `📅標題: ${event.title}`,
+              weight: 'bold',
+              size: 'lg',
+            },
+            {
+              type: 'text',
+              text: `🕓時間: ${startTime} ~ ${endTime}`,
+              margin: 'sm',
+              wrap: true,
+            },
+            {
+              type: 'text',
+              text: `📍地點: ${event.location || '無'}`,
+              margin: 'sm',
+            },
+            {
+              type: 'text',
+              text: `📝描述: ${event.body || '無'}`,
+              margin: 'sm',
+              wrap: true,
+            },
+          ],
+        },
+        footer: {
+          type: 'box',
+          layout: 'horizontal',
+          spacing: 'sm',
+          contents: [
+            {
+              type: 'button',
+              style: 'primary',
+              color: '#28a745',
+              action: {
+                type: 'postback',
+                label: '✅ 已完成',
+                data: JSON.stringify({
+                  action: 'completeEvent',
+                  eventId: event._id,
+                }),
+              },
+            },
+            {
+              type: 'button',
+              style: 'secondary',
+              color: '#dc3545',
+              action: {
+                type: 'postback',
+                label: '🗑 刪除',
+                data: JSON.stringify({
+                  action: 'deleteEvent',
+                  eventId: event._id,
+                }),
+              },
+            },
+          ],
+        },
+      },
     };
 
     if (notificationDate <= now && eventDate > now) {
@@ -127,11 +188,11 @@ async function handleAlldayCalendarEvents(events) {
   console.log('全天的事件', events);
 
   events.forEach((event) => {
-    const notificationDate = new Date(event.start);
-    notificationDate.setHours(8);
-    notificationDate.setMinutes(0);
+    const notificationDate = new Date(Date.now() + 1000 * 60 * 2);
+    // notificationDate.setHours(8);
+    // notificationDate.setMinutes(0);
 
-    console.log('notificationDate', notificationDate.toISOString());
+    console.log('notificationDate', notificationDate.toLocaleTimeString());
 
     const startTime = ` ${event.start.getFullYear()}/${
       event.start.getMonth() + 1
@@ -142,12 +203,73 @@ async function handleAlldayCalendarEvents(events) {
     }/${event.end.getDate()}`;
 
     const message = {
-      type: 'text',
-      text: `行程: ${
-        event.title
-      }\n 開始時間: ${startTime}\n 結束時間: ${endTime}\n 地點: ${
-        event.location || '無'
-      }\n 描述: ${event.body || '無'}`,
+      type: 'flex',
+      altText: `📅 行程提醒：${event.title}`,
+      contents: {
+        type: 'bubble',
+        body: {
+          type: 'box',
+          layout: 'vertical',
+          contents: [
+            {
+              type: 'text',
+              text: `📅標題: ${event.title}`,
+              weight: 'bold',
+              size: 'lg',
+            },
+            {
+              type: 'text',
+              text: `🕓時間: ${startTime} ~ ${endTime}`,
+              margin: 'sm',
+              wrap: true,
+            },
+            {
+              type: 'text',
+              text: `📍地點: ${event.location || '無'}`,
+              margin: 'sm',
+            },
+            {
+              type: 'text',
+              text: `📝描述: ${event.body || '無'}`,
+              margin: 'sm',
+              wrap: true,
+            },
+          ],
+        },
+        footer: {
+          type: 'box',
+          layout: 'horizontal',
+          spacing: 'sm',
+          contents: [
+            {
+              type: 'button',
+              style: 'primary',
+              color: '#28a745',
+              action: {
+                type: 'postback',
+                label: '✅ 已完成',
+                data: JSON.stringify({
+                  action: 'completeEvent',
+                  eventId: event._id,
+                }),
+              },
+            },
+            {
+              type: 'button',
+              style: 'secondary',
+              color: '#dc3545',
+              action: {
+                type: 'postback',
+                label: '🗑 刪除',
+                data: JSON.stringify({
+                  action: 'deleteEvent',
+                  eventId: event._id,
+                }),
+              },
+            },
+          ],
+        },
+      },
     };
 
     schedule.scheduleJob(
@@ -164,6 +286,7 @@ async function handleAlldayCalendarEvents(events) {
   });
 }
 
+//* 沒有event參數就直接傳送，有就進行處理
 async function sendLineMessageAndMarkNotified({ lineId, message, event }) {
   await client.pushMessage(lineId, message);
   if (!event) return;

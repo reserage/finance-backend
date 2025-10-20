@@ -6,6 +6,7 @@ const LocalStrategy = require("passport-local");
 const bcrypt = require("bcrypt");
 const Category = require("../models/category");
 const BookKeeping = require("../models/bookKeeping");
+const defaultItem = require('../utils/defaultItem');
 
 passport.serializeUser((user, done) => {
   console.log("Serialize使用者");
@@ -155,6 +156,8 @@ passport.use(
         }
 
         // ------------------------------------------------------------
+
+        defaultItem.getDefaultCities(savedUser._id);
 
         console.log("成功創建用戶。");
         done(null, savedUser);

@@ -3,6 +3,9 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const User = require('../models/user.js');
 const Record = require('../models/record.js');
+const BookKeeping = require('../models/bookKeeping.js');
+const Budget = require('../models/budget.js');
+const Category = require('../models/category.js');
 
 router.get('/init', async (req, res) => {
   // 要判斷該月份有沒有記帳
@@ -50,7 +53,6 @@ async function getAllDataByMonth(year, month, userId) {
     userid: userId,
     date: { $gte: startDate, $lt: endDate },
   });
-  console.log(records);
 
   // 計算總收入和總支出
   const totalIncome = records.reduce((sum, record) => {
@@ -86,6 +88,38 @@ async function getAllDataByMonth(year, month, userId) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
+  //*  --------------- 預算對比部分 ------------------
+  //* 抓取該日期的 bookKeeping
+  const bookKeeping = await BookKeeping.findOne({
+    user: userId,
+    date: new Date(`${year}-${month}-01`),
+    isDefault: { $ne: false },
+  });
+  //* 藉由 bookKeeping 抓屬於他的 budget
+  const budgetDocument = await Budget.findOne({
+    user: userId,
+    bookkeeping: bookKeeping ? bookKeeping._id : null,
+  });
+
+  //* 組合預算資料
+  const categoryIds = Array.from(budgetDocument.budget.keys());
+
+  // 一次查出所有分類
+  const categories = await Category.find({ _id: { $in: categoryIds } }).select(
+    'name'
+  );
+  const categoryMap = new Map(
+    categories.map((c) => [c._id.toString(), c.name])
+  );
+
+  // 組合結果
+  const result = categoryIds.map((categoryId) => ({
+    categoryId,
+    categoryName: categoryMap.get(categoryId.toString()) || '未知分類',
+    budget: budgetDocument.budget.get(categoryId) || 0,
+    total: budgetDocument.totalsByCategory.get(categoryId) || 0,
+  }));
+
   return {
     dataMonth: `${year}-${String(month).padStart(2, '0')}`,
     data: {
@@ -94,6 +128,7 @@ async function getAllDataByMonth(year, month, userId) {
       totalIncome: totalIncome,
       totalExpense: totalExpense,
       sorted: sorted, // 用來給前端的 高消費類別 跟 圓餅圖
+      budget: result,
     },
   };
 }
@@ -128,7 +163,6 @@ router.get('/line', async (req, res) => {
     if (spendingTrendRadio === 'month') {
       const results = await getMonthlyWeeklyTotalByUser(userId, year, month);
 
-      console.log('results: ',results);
       res.json(results);
       return;
     } else if (spendingTrendRadio === 'year') {

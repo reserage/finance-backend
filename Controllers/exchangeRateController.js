@@ -10,7 +10,17 @@ const catchAsync = require('../utils/catchAsync');
 //* 這個API是免費的，限制每月只能取1500次
 exports.getAllExchangeRates = catchAsync(async (req, res, next) => {
   if (req.exchangeRate) {
-    res.status(200).json({
+    // if (req.currencyCode) {
+    //   return res.status(200).json({
+    //     status: 'success',
+    //     data: {
+    //       currency: req.currencyCode,
+    //       Rate: req.exchangeRate.conversion_rates[req.currencyCode],
+    //     },
+    //   });
+    // }
+
+    return res.status(200).json({
       status: 'success',
       data: {
         currency: req.exchangeRate.base_code,
@@ -31,7 +41,7 @@ exports.getAllExchangeRates = catchAsync(async (req, res, next) => {
 });
 
 exports.checkAndRefreshRateData = catchAsync(async (req, res, next) => {
-  const { currency } = req.params;
+  const currency = req.params.currency || 'TWD';
   let { date } = req.query;
   date = date ? taiwanDateToUTC(date) : new Date();
   console.log(date);
@@ -156,6 +166,19 @@ exports.getPopularExchangeRates = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.countryToCurrencyCode = async (req, res, next) => {
+  const { country } = req.params;
+  const response = await axios.get(
+    `https://restcountries.com/v3.1/name/${country}`
+  );
+
+  req.currencyCode = response.data[0].currencies
+    ? Object.keys(response.data[0].currencies)[0]
+    : null;
+
+  return next();
+};
+
 const fetchAndSaveExchangeRates = async (currency, date) => {
   console.log('抓取最新匯率資料中...');
   const exchangeRateApiUrl = `https://v6.exchangerate-api.com/v6/${process.env.EXCHANGE_API_KEY}/latest/${currency}`;
@@ -209,7 +232,14 @@ function taiwanDateToUTC(taiwanDateStr) {
 
   // 用今天的時分秒，但套用台灣時區
   const utcDate = new Date(
-    Date.UTC(year, month - 1, day, now.getHours() - 8, now.getMinutes(), now.getSeconds())
+    Date.UTC(
+      year,
+      month - 1,
+      day,
+      now.getHours() - 8,
+      now.getMinutes(),
+      now.getSeconds()
+    )
   );
 
   return utcDate;
