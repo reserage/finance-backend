@@ -188,9 +188,9 @@ async function handleAlldayCalendarEvents(events) {
   console.log('全天的事件', events);
 
   events.forEach((event) => {
-    const notificationDate = new Date(Date.now() + 1000 * 60 * 2);
-    // notificationDate.setHours(8);
-    // notificationDate.setMinutes(0);
+    const notificationDate = new Date(event.start);
+    notificationDate.setHours(8);
+    notificationDate.setMinutes(0);
 
     console.log('notificationDate', notificationDate.toLocaleTimeString());
 
