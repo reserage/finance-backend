@@ -3,14 +3,15 @@ const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 
 exports.getCities = catchAsync(async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1 } = req.query;
   const userId = req.user._id;
   const filter = {};
+  const sort = {}
   filter.userId = userId;
+  sort.isVisible = -1;
+  sort.updatedAt = 1;
 
-  const cities = await City.find(filter)
-    .skip((page - 1) * limit)
-    .limit(limit);
+  const cities = await City.find(filter).sort(sort);
 
   res.status(200).json({
     status: 'success',
@@ -72,6 +73,7 @@ exports.updateCity = catchAsync(async (req, res, next) => {
     'country',
     'timezone',
     'timezoneOffset',
+    'isVisible',
   ];
 
   allowedFields.forEach((field) => {
