@@ -30,6 +30,7 @@ const budgetSchema = new mongoose.Schema(
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
+    timeseries: true
   }
 );
 

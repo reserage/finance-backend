@@ -9,6 +9,7 @@ const defaultCities = [
     isVisible: true,
     timezone: 'Asia/Tokyo',
     timezoneOffset: 9,
+    isDefault: true,
   },
   {
     name: '首爾',
@@ -18,6 +19,7 @@ const defaultCities = [
     isVisible: true,
     timezone: 'Asia/Seoul',
     timezoneOffset: 9,
+    isDefault: true,
   },
   {
     name: '台北',
@@ -27,6 +29,7 @@ const defaultCities = [
     isVisible: true,
     timezone: 'Asia/Taipei',
     timezoneOffset: 8,
+    isDefault: true,
   },
   {
     name: '香港',
@@ -36,6 +39,7 @@ const defaultCities = [
     isVisible: true,
     timezone: 'Asia/Hong_Kong',
     timezoneOffset: 8,
+    isDefault: true,
   },
   {
     name: '北京',
@@ -45,6 +49,7 @@ const defaultCities = [
     isVisible: true,
     timezone: 'Asia/Shanghai',
     timezoneOffset: 8,
+    isDefault: true,
   },
   {
     name: '新加坡',
@@ -54,6 +59,7 @@ const defaultCities = [
     isVisible: true,
     timezone: 'Asia/Singapore',
     timezoneOffset: 8,
+    isDefault: true,
   },
   {
     name: '曼谷',
@@ -63,6 +69,7 @@ const defaultCities = [
     isVisible: true,
     timezone: 'Asia/Bangkok',
     timezoneOffset: 7,
+    isDefault: true,
   },
   {
     name: '雅加達',
@@ -72,6 +79,7 @@ const defaultCities = [
     isVisible: true,
     timezone: 'Asia/Jakarta',
     timezoneOffset: 7,
+    isDefault: true,
   },
   {
     name: '德里',
@@ -81,6 +89,7 @@ const defaultCities = [
     isVisible: true,
     timezone: 'Asia/Kolkata',
     timezoneOffset: 5.5,
+    isDefault: true,
   },
 
   {
@@ -91,6 +100,7 @@ const defaultCities = [
     isVisible: true,
     timezone: 'Europe/London',
     timezoneOffset: 0,
+    isDefault: true,
   },
   {
     name: '巴黎',
@@ -99,6 +109,7 @@ const defaultCities = [
     englishCountryName: 'France',
     timezone: 'Europe/Paris',
     timezoneOffset: 1,
+    isDefault: true,
   },
   {
     name: '柏林',
@@ -107,6 +118,7 @@ const defaultCities = [
     englishCountryName: 'Germany',
     timezone: 'Europe/Berlin',
     timezoneOffset: 1,
+    isDefault: true,
   },
   {
     name: '馬德里',
@@ -115,6 +127,7 @@ const defaultCities = [
     englishCountryName: 'Spain',
     timezone: 'Europe/Madrid',
     timezoneOffset: 1,
+    isDefault: true,
   },
   {
     name: '羅馬',
@@ -123,6 +136,7 @@ const defaultCities = [
     englishCountryName: 'Italy',
     timezone: 'Europe/Rome',
     timezoneOffset: 1,
+    isDefault: true,
   },
   {
     name: '莫斯科',
@@ -131,6 +145,7 @@ const defaultCities = [
     englishCountryName: 'Russia',
     timezone: 'Europe/Moscow',
     timezoneOffset: 3,
+    isDefault: true,
   },
 
   {
@@ -140,6 +155,7 @@ const defaultCities = [
     englishCountryName: 'United States',
     timezone: 'America/New_York',
     timezoneOffset: -5,
+    isDefault: true,
   },
   {
     name: '芝加哥',
@@ -148,6 +164,7 @@ const defaultCities = [
     englishCountryName: 'United States',
     timezone: 'America/Chicago',
     timezoneOffset: -6,
+    isDefault: true,
   },
   {
     name: '丹佛',
@@ -156,6 +173,7 @@ const defaultCities = [
     englishCountryName: 'United States',
     timezone: 'America/Denver',
     timezoneOffset: -7,
+    isDefault: true,
   },
   {
     name: '洛杉磯',
@@ -164,6 +182,7 @@ const defaultCities = [
     englishCountryName: 'United States',
     timezone: 'America/Los_Angeles',
     timezoneOffset: -8,
+    isDefault: true,
   },
   {
     name: '多倫多',
@@ -172,6 +191,7 @@ const defaultCities = [
     englishCountryName: 'Canada',
     timezone: 'America/Toronto',
     timezoneOffset: -5,
+    isDefault: true,
   },
   {
     name: '溫哥華',
@@ -180,6 +200,7 @@ const defaultCities = [
     englishCountryName: 'Canada',
     timezone: 'America/Vancouver',
     timezoneOffset: -8,
+    isDefault: true,
   },
 
   {
@@ -189,6 +210,7 @@ const defaultCities = [
     englishCountryName: 'Brazil',
     timezone: 'America/Sao_Paulo',
     timezoneOffset: -3,
+    isDefault: true,
   },
   {
     name: '布宜諾斯艾利斯',
@@ -197,6 +219,7 @@ const defaultCities = [
     englishCountryName: 'Argentina',
     timezone: 'America/Argentina/Buenos_Aires',
     timezoneOffset: -3,
+    isDefault: true,
   },
 
   {
@@ -206,6 +229,7 @@ const defaultCities = [
     englishCountryName: 'Australia',
     timezone: 'Australia/Sydney',
     timezoneOffset: 10,
+    isDefault: true,
   },
   {
     name: '墨爾本',
@@ -214,6 +238,7 @@ const defaultCities = [
     englishCountryName: 'Australia',
     timezone: 'Australia/Melbourne',
     timezoneOffset: 10,
+    isDefault: true,
   },
   {
     name: '奧克蘭',
@@ -222,6 +247,7 @@ const defaultCities = [
     englishCountryName: 'New Zealand',
     timezone: 'Pacific/Auckland',
     timezoneOffset: 12,
+    isDefault: true,
   },
 
   {
@@ -231,6 +257,7 @@ const defaultCities = [
     englishCountryName: 'Egypt',
     timezone: 'Africa/Cairo',
     timezoneOffset: 2,
+    isDefault: true,
   },
   {
     name: '約翰尼斯堡',
@@ -239,6 +266,7 @@ const defaultCities = [
     englishCountryName: 'South Africa',
     timezone: 'Africa/Johannesburg',
     timezoneOffset: 2,
+    isDefault: true,
   },
   {
     name: '奈洛比',
@@ -247,6 +275,7 @@ const defaultCities = [
     englishCountryName: 'Kenya',
     timezone: 'Africa/Nairobi',
     timezoneOffset: 3,
+    isDefault: true,
   },
 ];
 

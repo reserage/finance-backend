@@ -6,7 +6,7 @@ exports.getCities = catchAsync(async (req, res) => {
   const { page = 1 } = req.query;
   const userId = req.user._id;
   const filter = {};
-  const sort = {}
+  const sort = {};
   filter.userId = userId;
   sort.isVisible = -1;
   sort.updatedAt = 1;
@@ -23,14 +23,14 @@ exports.getCities = catchAsync(async (req, res) => {
 });
 
 exports.addCity = catchAsync(async (req, res, next) => {
-  const { name, country, timezone, timezoneOffset } = req.body;
+  const { name, country, timezone, timezoneOffset, isVisible } = req.body;
   const userId = req.user._id;
 
-  if (!name || !country || !timezone || timezoneOffset === undefined) {
+  if (!name || !country || !timezone) {
     return next(new AppError('請提供完整的城市資訊', 400));
   }
 
-  const existingCity = await City.findOne({ name, country, userId });
+  const existingCity = await City.findOne({ name, country, timezone, userId });
   if (existingCity) {
     return next(new AppError('該城市已存在', 400));
   }
@@ -41,6 +41,7 @@ exports.addCity = catchAsync(async (req, res, next) => {
     timezone,
     timezoneOffset,
     userId,
+    isVisible,
   });
 
   res.status(201).json({

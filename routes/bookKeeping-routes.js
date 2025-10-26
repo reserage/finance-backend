@@ -3,6 +3,7 @@ const BookKeeping = require("../models/bookKeeping.js");
 const User = require("../models/user.js");
 const passport = require("passport");
 const { checkLogin } = require("../middlewares/authMiddleware.js");
+const bookKeepingController = require("../Controllers/bookKeepingController.js");
 
 router.post("/create", checkLogin, async (req, res) => {
   try {
@@ -49,17 +50,8 @@ router.get("/getbookKeepings", checkLogin, async (req, res) => {
   }
 });
 
-router.delete("/delete/:deletedId", checkLogin, async (req, res) => {
-  try {
-    const { deletedId } = req.params;
-    const deletedBook = await BookKeeping.findOneAndDelete({
-      _id: deletedId,
-    });
-    return res.status(201).json(deletedBook);
-  } catch (e) {
-    console.error("Error deleting book keepings:", e);
-  }
-});
+//*
+router.delete("/delete/:deletedId", checkLogin, bookKeepingController.deleteBookKeeping);
 
 router.patch("/edit", checkLogin, async (req, res) => {
   try {

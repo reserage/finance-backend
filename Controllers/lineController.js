@@ -57,7 +57,7 @@ async function handleEvent(event) {
 
 exports.generateLineBindCode = catchAsync(async (req, res, next) => {
   //* 1) 取得使用者資料
-  const user = await User.findById(req.user?.id);
+  const user = await User.findById(req.user?._id);
   if (!user) {
     return next(new AppError('使用者不存在，請稍後再試', 404));
   }
