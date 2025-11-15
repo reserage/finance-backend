@@ -7,7 +7,7 @@ const BookKeeping = require("../models/bookKeeping.js");
 const CategoryBudget = require("../models/budget.js");
 
 // const userId = '6815c5bd9bc92882cefd2306'; // 測試用
-
+//* 有使用
 router.get("/getCategories", async (req, res) => {
   try {
     const userId = req.user._id;
@@ -99,7 +99,7 @@ router.post("/addCategory", async (req, res) => {
     return res.status(500).json({ message: "新增失敗" });
   }
 });
-
+//* 有使用
 router.delete("/deleteCategory/:id", async (req, res) => {
   try {
     // deleteCategoryId 是陣列
@@ -184,6 +184,7 @@ router.get("/getCategoriesBudgetByBook", async (req, res) => {
 });
 
 // desc: 修改分類的路由
+//* 有使用
 router.patch("/modifyCategory/:id", async (req, res) => {
   try {
     const categoryId = req.params.id;

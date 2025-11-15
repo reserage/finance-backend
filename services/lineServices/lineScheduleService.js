@@ -315,14 +315,14 @@ const CATEGORY_ICONS = {
 };
 
 const BUDGET_WARNING_THRESHOLD = 80;
-const DAILY_SUMMARY_CRON = '0 22 * * *'; // 每天22點執行
+const DAILY_SUMMARY_CRON = '7 6 * * *'; // 每天22點執行
 
 /**
  * 啟動每日財務總結定時任務
  */
 exports.sendDailySummaryToLine = async function sendDailySummaryToLine() {
   // 設定定時任務：每天22點發送通知
-  schedule.scheduleJob(DAILY_SUMMARY_CRON, async () => {
+  schedule.scheduleJob({ rule: DAILY_SUMMARY_CRON, tz: 'Asia/Taipei' }, async () => {
     console.log('開始執行每日財務總結任務...');
 
     try {
