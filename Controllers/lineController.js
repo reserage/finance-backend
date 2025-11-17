@@ -9,50 +9,78 @@ const {
 const { ReturnDocument } = require('mongodb');
 
 exports.easyResponse = (req, res) => {
-  Promise.all(req.body.events.map(handleEvent)).then((result) =>
-    res.json(result)
+  Promise.all(req.body.events.map(handleEvent)).then(() =>
+    res.json({ status: 'ok' })
   );
 };
 
 async function handleEvent(event) {
-  //* 如果是文字就跑到這裡
-  if (event.type == 'message') {
-    if (event.message.text.trim().startsWith('綁定')) {
+  // ---------------------------
+  // 1) 文字訊息處理
+  // ---------------------------
+  if (event.type === 'message') {
+    const text = event.message?.text?.trim() || '';
+
+    // 綁定
+    if (text.startsWith('綁定')) {
       return bindLineAccount(event);
     }
-    //* 如果是calendar event 回應就跑來這裡
-  } else if (event.type == 'postback') {
-    if (event.type === 'postback') {
-      const data = JSON.parse(event.postback.data);
-      console.log('data', data);
-      if (data.action === 'completeEvent') {
-        const calendarEvent = await CalendarEvent.findById(
-          data.eventId,
-        );
 
-        calendarEvent.isDone = true;
-        calendarEvent.save();
-
-        await client.replyMessage(event.replyToken, {
-          type: 'text',
-          text: '✅ 已標記該事件為完成！',
-        });
-        return;
-      } else if (data.action === 'deleteEvent') {
-        await CalendarEvent.findByIdAndDelete(data.eventId);
-        await client.replyMessage(event.replyToken, {
-          type: 'text',
-          text: '🗑 已刪除該事件。',
-        });
-        return;
-      }
-    }
+    // 一般文字回覆
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: `文字輸入目前只支援綁定，請輸入「綁定 + 驗證碼」來綁定您的帳號。例如：「綁定 123456」。`,
+    });
   }
 
-  return await client.replyMessage(event.replyToken, {
-    type: 'text',
-    text: `你說了: ${event.message.text}`,
-  });
+  // ---------------------------
+  // 2) postback 處理
+  // ---------------------------
+  if (event.type === 'postback') {
+    const data = JSON.parse(event.postback.data);
+
+    if (data.action === 'completeEvent') {
+      const calendarEvent = await CalendarEvent.findById(data.eventId);
+      if (calendarEvent) {
+        calendarEvent.isDone = true;
+        await calendarEvent.save();
+      }
+
+      return client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: '✅ 已標記該事件為完成！',
+      });
+    }
+
+    if (data.action === 'deleteEvent') {
+      await CalendarEvent.findByIdAndDelete(data.eventId);
+
+      return client.replyMessage(event.replyToken, {
+        type: 'text',
+        text: '🗑 已刪除該事件。',
+      });
+    }
+
+    // 未知 postback
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: '⚠️ 無法識別的操作。',
+    });
+  }
+
+  // ---------------------------
+  // 3) 其他 event（join / follow / unsend 等）
+  // ---------------------------
+
+  // 有些 event 沒 replyToken，要避免報錯
+  if (event.replyToken) {
+    return client.replyMessage(event.replyToken, {
+      type: 'text',
+      text: '🙇 抱歉，我目前只支援文字訊息與按鈕操作。',
+    });
+  }
+
+  return; // 靜默處理
 }
 
 exports.generateLineBindCode = catchAsync(async (req, res, next) => {

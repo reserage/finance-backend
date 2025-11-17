@@ -79,6 +79,7 @@ router.post("/addCategory", async (req, res) => {
     const checkCategory = await Category.findOne({
       user: userId,
       name,
+      isIncome,
     });
 
     if (checkCategory)

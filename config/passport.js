@@ -177,7 +177,10 @@ passport.use(
       console.log(foundUser);
       if (foundUser) {
         if (!foundUser.password)
-          return done(null, false, { message: '該email已用於google登入' });
+          return done(null, false, {
+            message:
+              '該email已用於google登入，請用Google登入',
+          });
 
         let result = await bcrypt.compare(password, foundUser.password);
         if (result) {

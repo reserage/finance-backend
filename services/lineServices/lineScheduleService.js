@@ -18,20 +18,14 @@ exports.scheduleTodoNotification = async (events) => {
   //! 這裡要改成跳板，在這裡判斷是不是全天事件，然後分別跳到不同的function
 
   if (!Array.isArray(events)) {
-    if (!events) {
-      events = [];
-    } else {
-      events = [events];
-    }
+    events = events ? [events] : [];
   }
 
-  if (events.length > 0) {
-    handleTimedCalendarEvents(events.filter((event) => !event.isAllday));
-    handleAlldayCalendarEvents(events.filter((event) => event.isAllday));
-  } else {
-    handleTimedCalendarEvents();
-    handleAlldayCalendarEvents();
-  }
+  const timedEvents = events.filter((e) => !e.isAllday);
+  const alldayEvents = events.filter((e) => e.isAllday);
+
+  handleTimedCalendarEvents(timedEvents.length ? timedEvents : []);
+  handleAlldayCalendarEvents(alldayEvents.length ? alldayEvents : []);
 };
 
 eventSchedule.on('eventChanged', async (event) => {
@@ -322,16 +316,19 @@ const DAILY_SUMMARY_CRON = '0 22 * * *'; // 每天22點執行
  */
 exports.sendDailySummaryToLine = async function sendDailySummaryToLine() {
   // 設定定時任務：每天22點發送通知
-  schedule.scheduleJob({ rule: DAILY_SUMMARY_CRON, tz: 'Asia/Taipei' }, async () => {
-    console.log('開始執行每日財務總結任務...');
+  schedule.scheduleJob(
+    { rule: DAILY_SUMMARY_CRON, tz: 'Asia/Taipei' },
+    async () => {
+      console.log('開始執行每日財務總結任務...');
 
-    try {
-      await executeDailySummary();
-      console.log('每日財務總結任務執行完成');
-    } catch (error) {
-      console.error('每日財務總結任務執行失敗:', error);
+      try {
+        await executeDailySummary();
+        console.log('每日財務總結任務執行完成');
+      } catch (error) {
+        console.error('每日財務總結任務執行失敗:', error);
+      }
     }
-  });
+  );
 
   //* 下面開始不是schedule
 
