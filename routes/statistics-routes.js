@@ -31,6 +31,13 @@ router.get('/init', async (req, res) => {
     const sortedMonths = Array.from(uniqueMonths).sort();
     // --------------------------------------------------------------------------------------
 
+    if (sortedMonths.length === 0) {
+      return res.json({
+        months: [],
+        allData: null,
+      });
+    }
+
     // console.log(recordsDate);
     const year = sortedMonths[sortedMonths.length - 1].split('-')[0];
     const month = sortedMonths[sortedMonths.length - 1].split('-')[1];
@@ -138,6 +145,9 @@ router.get('/', async (req, res) => {
     const userId = req.user._id;
     // const userId = "6815c5bd9bc92882cefd2306"; // 測試用的userId
     const { selectedDate } = req.query;
+    if (!selectedDate) {
+      return res.status(400).json({ message: 'No selectedDate provided' });
+    }
 
     const year = selectedDate.split('-')[0];
     const month = selectedDate.split('-')[1];

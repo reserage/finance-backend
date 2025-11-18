@@ -28,30 +28,9 @@ router.post('/register', async (req, res) => {
     });
     let savedUser = await newUser.save();
 
-    // --------------------將預設的類別存入資料庫--------------------
-    let defaultIncomeCategory = ['薪水', '投資'];
-    let defaultExpenseCategory = ['餐飲', '交通', '娛樂', '其他'];
-
-    for (const income of defaultIncomeCategory.reverse()) {
-      const category = new Category({
-        name: income,
-        isIncome: true,
-        user: savedUser._id,
-      });
-      await category.save();
-    }
-
-    for (const expense of defaultExpenseCategory.reverse()) {
-      const category = new Category({
-        name: expense,
-        isIncome: false,
-        user: savedUser._id,
-      });
-      await category.save();
-    }
-    // ------------------------------------------------------------
-    setDefaultBook(savedUser._id);
-    defaultItem.getDefaultCities(savedUser._id);
+    await defaultItem.createDefaultCategories(savedUser._id);
+    await defaultItem.createDefaultBooks(savedUser._id);
+    await defaultItem.getDefaultCities(savedUser._id);
 
     return res.json({ message: '註冊成功', registrationSuccess: true });
   } catch (e) {
@@ -129,86 +108,6 @@ router.get(
   }
 );
 
-router.post('/text', (req, res) => {
-  const userId = '68345103df36477c4405fba3'; // 測試用的(陳彥志小弟)
-  setDefaultBook(userId);
-  return res.status(200).json({ message: '預設記帳本完成' });
-});
 
-async function setDefaultBook(userId) {
-  try {
-    const user = await User.findOne({ _id: userId });
-    const years = [2024, 2025]; // 用於設定有預設記帳本的年齡
-    const bookInfo = [
-      {
-        name: '1月記帳本',
-        description: '這是一個範例視圖，您可以在此處添加任何內容。',
-      },
-      {
-        name: '2月記帳本',
-        description: '這是一個範例視圖，您可以在此處添加任何內容。',
-      },
-      {
-        name: '3月記帳本',
-        description: '這是一個範例視圖，您可以在此處添加任何內容。',
-      },
-      {
-        name: '4月記帳本',
-        description: '這是一個範例視圖，您可以在此處添加任何內容。',
-      },
-      {
-        name: '5月記帳本',
-        description: '這是一個範例視圖，您可以在此處添加任何內容。',
-      },
-      {
-        name: '6月記帳本',
-        description: '這是一個範例視圖，您可以在此處添加任何內容。',
-      },
-      {
-        name: '7月記帳本',
-        description: '這是一個範例視圖，您可以在此處添加任何內容。',
-      },
-      {
-        name: '8月記帳本',
-        description: '這是一個範例視圖，您可以在此處添加任何內容。',
-      },
-      {
-        name: '9月記帳本',
-        description: '這是一個範例視圖，您可以在此處添加任何內容。',
-      },
-      {
-        name: '10月記帳本',
-        description: '這是一個範例視圖，您可以在此處添加任何內容。',
-      },
-      {
-        name: '11月記帳本',
-        description: '這是一個範例視圖，您可以在此處添加任何內容。',
-      },
-      {
-        name: '12月記帳本',
-        description: '這是一個範例視圖，您可以在此處添加任何內容。',
-      },
-    ];
-
-    for (const year of years) {
-      // 由於forEach不會等待async完成，所以使用for...of
-      for (let i = 0; i < bookInfo.length; i++) {
-        const book = bookInfo[i];
-        try {
-          const newBook = await user.addBookKeeping(
-            book.name,
-            `${year}-${String(i + 1).padStart(2, '0')}-01`, // 2024-01-01, 2024-02-01, ...
-            book.description
-          );
-          console.log('newBook: ', newBook);
-        } catch (e) {
-          console.log(e);
-        }
-      }
-    }
-  } catch (e) {
-    console.log('error in serDefaultBook function: ', e);
-  }
-}
 
 module.exports = router;
