@@ -40,8 +40,8 @@ eventSchedule.on('eventDeleted', async (eventId) => {
 
 // !!!!!!!!!  當04:04分設定事件start為04:04分時會因為毫秒的差異不會觸發line通知
 
-async function handleTimedCalendarEvents(events) {
-  if (!events) {
+async function handleTimedCalendarEvents(events = []) {
+  if (events.length == 0) {
     events = await CalendarEvent.find({
       start: {
         $gte: new Date(),
@@ -164,11 +164,13 @@ async function handleTimedCalendarEvents(events) {
   });
 }
 
-async function handleAlldayCalendarEvents(events) {
-  if (!events) {
+async function handleAlldayCalendarEvents(events = []) {
+  if (events.length == 0) {
+    const todayZero = new Date();
+    todayZero.setHours(0, 0, 0, 0);
     events = await CalendarEvent.find({
       start: {
-        $gte: new Date(),
+        $gte: todayZero,
         $lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
       isNotified: { $ne: true },
@@ -178,6 +180,8 @@ async function handleAlldayCalendarEvents(events) {
       select: 'lineId',
     });
   }
+  console.log('now', new Date().toLocaleString());
+  console.log(new Date().toLocaleString());
 
   console.log('全天的事件', events);
 
@@ -282,6 +286,7 @@ async function handleAlldayCalendarEvents(events) {
 
 //* 沒有event參數就直接傳送，有就進行處理
 async function sendLineMessageAndMarkNotified({ lineId, message, event }) {
+  console.log('Sending Line message to:', lineId);
   await client.pushMessage(lineId, message);
   if (!event) return;
   try {
