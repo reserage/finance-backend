@@ -74,7 +74,7 @@ async function getAllDataByMonth(year, month, userId) {
   const categoryTotals = records.reduce(
     (totals, record) => {
       const category = record.category;
-      if (record.isIncome === 'income') {
+      if (record.isIncome === true) {
         if (!totals.income[category]) {
           totals.income[category] = 0;
         }

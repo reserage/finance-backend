@@ -10,16 +10,6 @@ const catchAsync = require('../utils/catchAsync');
 //* 這個API是免費的，限制每月只能取1500次
 exports.getAllExchangeRates = catchAsync(async (req, res, next) => {
   if (req.exchangeRate) {
-    // if (req.currencyCode) {
-    //   return res.status(200).json({
-    //     status: 'success',
-    //     data: {
-    //       currency: req.currencyCode,
-    //       Rate: req.exchangeRate.conversion_rates[req.currencyCode],
-    //     },
-    //   });
-    // }
-
     return res.status(200).json({
       status: 'success',
       data: {
@@ -44,7 +34,6 @@ exports.checkAndRefreshRateData = catchAsync(async (req, res, next) => {
   const currency = req.params.currency || 'TWD';
   let { date } = req.query;
   date = date ? taiwanDateToUTC(date) : new Date();
-  console.log(date);
 
   //* 1.) 查詢有沒有符合的document(exchangeRate API的document)
   let exchangeRate = await ExchangeRate.findOne({
@@ -57,44 +46,14 @@ exports.checkAndRefreshRateData = catchAsync(async (req, res, next) => {
     },
   });
 
-  // console.log('time_last_update', exchangeRate.time_last_update);
-  // console.log('time_next_update', exchangeRate.time_next_update);
-
-  // console.log(
-  //   'date',
-  //   date.toISOString(),
-  //   exchangeRate.time_last_update < date,
-  //   exchangeRate.time_next_update > date
-  // );
-  // console.log('dddddd', date > new Date('2025-08-12T00:00:02.000+00:00'));
-  // console.log('dddddd', date < new Date('2025-08-13T00:00:02.000+00:00'));
-
-  // //* 卻是否是今天日期才能決定要不要到API抓 更新資料
+  // //* 是否是今天日期才能決定要不要到API抓最新資料
   if (!exchangeRate && isTodayUTC(date)) {
     exchangeRate = await fetchAndSaveExchangeRates(currency);
   } else if (!exchangeRate) {
-    console.log(date);
-    console.log(isTodayUTC(date));
-    console.log('我要去錯誤處理中介了(陳彥志強迫我的) checkAndRefreshRateData');
     return res
       .status(404)
       .json({ message: 'No exchange rate found for the given date' });
   }
-
-  // //* 2.) 如果1.沒有資料，二次查詢有沒有符合的document(frankfurter API的document)
-  // if (!exchangeRate && date) {
-  //   exchangeRate = await ExchangeRate.findOne({
-  //     base_code: currency,
-  //     ratesDate: new Date(date),
-  //   });
-  // }
-
-  // //* 3.) 如果2.沒有資料，則呼叫API(沒有日期則呼叫exchangeRate API，有日期則呼叫frankfurter API)
-  // if (!exchangeRate && !date) {
-  //   exchangeRate = await fetchAndSaveExchangeRates(currency);
-  // } else if (!exchangeRate && date) {
-  //   exchangeRate = await fetchAndSaveExchangeRates(currency, date);
-  // }
   //* 4.) 將資料存入req中
   req.exchangeRate = exchangeRate;
   return next();
@@ -180,14 +139,10 @@ exports.countryToCurrencyCode = async (req, res, next) => {
 };
 
 const fetchAndSaveExchangeRates = async (currency, date) => {
-  console.log('抓取最新匯率資料中...');
   const exchangeRateApiUrl = `https://v6.exchangerate-api.com/v6/${process.env.EXCHANGE_API_KEY}/latest/${currency}`;
-  const frankfurterApiUrl = `https://api.frankfurter.app/${date}?from=${currency}`;
 
   try {
-    const response = await axios.get(
-      date ? frankfurterApiUrl : exchangeRateApiUrl
-    );
+    const response = await axios.get(exchangeRateApiUrl);
     //* 存進DB中
     const exchangeRate = await ExchangeRate.create({
       base_code: response.data.base_code || response.data.base,

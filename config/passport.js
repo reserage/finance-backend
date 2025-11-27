@@ -10,17 +10,11 @@ const defaultItem = require('../utils/defaultItem');
 
 passport.serializeUser((user, done) => {
   console.log('Serialize使用者');
-  // console.log("serializeUser使用者的id: ", user._id);
   done(null, user._id); // 將mongoDB的id，存在session內
-  // 並且將id簽名後，以Cookie的形式給使用者
 });
 
 passport.deserializeUser(async (_id, done) => {
-  console.log(
-    'Deserialize使用者。。。使用serializeIser儲存的id，去找到資料庫內的資料'
-  );
   let foundUser = await User.findOne({ _id }).exec();
-  // console.log("deserializeUser使用者的資料: ", foundUser);
   done(null, foundUser); // 將資料庫的資料，放在req.user內
 });
 

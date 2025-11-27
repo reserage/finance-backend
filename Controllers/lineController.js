@@ -68,10 +68,6 @@ async function handleEvent(event) {
     });
   }
 
-  // ---------------------------
-  // 3) 其他 event（join / follow / unsend 等）
-  // ---------------------------
-
   // 有些 event 沒 replyToken，要避免報錯
   if (event.replyToken) {
     return client.replyMessage(event.replyToken, {
@@ -80,7 +76,7 @@ async function handleEvent(event) {
     });
   }
 
-  return; // 靜默處理
+  return;
 }
 
 exports.generateLineBindCode = catchAsync(async (req, res, next) => {
