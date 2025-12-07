@@ -187,8 +187,8 @@ async function handleAlldayCalendarEvents(events = []) {
 
   events.forEach((event) => {
     const notificationDate = new Date(event.start);
-    notificationDate.setHours(8);
-    notificationDate.setMinutes(0);
+    notificationDate.setHours(16);
+    notificationDate.setMinutes(38);
 
     console.log('notificationDate', notificationDate.toLocaleTimeString());
 
