@@ -186,9 +186,21 @@ async function handleAlldayCalendarEvents(events = []) {
   console.log('全天的事件', events);
 
   events.forEach((event) => {
-    const notificationDate = new Date(event.start);
-    notificationDate.setHours(8);
-    notificationDate.setMinutes(44);
+    const eventDate = new Date(event.start);
+
+    // 建立台灣時間的 08:00
+    const taiwanTime = new Date(
+      eventDate.getFullYear(),
+      eventDate.getMonth(),
+      eventDate.getDate(),
+      17,
+      9,
+      0
+    );
+
+    const notificationDate = new Date(
+      taiwanTime.getTime() - 8 * 60 * 60 * 1000
+    );
 
     console.log('notificationDate', notificationDate.toLocaleTimeString());
 
