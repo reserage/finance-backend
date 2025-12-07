@@ -376,6 +376,45 @@ exports.createDefaultBooks = async function (userId) {
   }
 };
 
+exports.ensureCurrentYearBooks = async function (userId) {
+  const currentYear = new Date().getFullYear();
+
+  // 找使用者是否已有今年的記帳本
+  const exists = await BookKeeping.exists({
+    user: userId,
+    date: {
+      $gte: new Date(`${currentYear}-01-01`),
+      $lte: new Date(`${currentYear}-12-31`)
+    }
+  });
+
+  // 若今年已經有紀錄 → 不補
+  if (exists) return;
+
+  console.log(`偵測到缺少 ${currentYear} 年記帳本 → 正在補齊...`);
+
+  const bookInfo = [
+    '1月記帳本', '2月記帳本', '3月記帳本', '4月記帳本',
+    '5月記帳本', '6月記帳本', '7月記帳本', '8月記帳本',
+    '9月記帳本', '10月記帳本', '11月記帳本', '12月記帳本'
+  ];
+
+  const docs = bookInfo.map((name, index) => {
+    const month = index + 1;
+    return {
+      name,
+      date: new Date(`${currentYear}-${String(month).padStart(2, '0')}-01`),
+      description: '這是一個範例視圖，您可以在此處添加任何內容。',
+      user: userId,
+      isDefault: true,
+    };
+  });
+
+  await BookKeeping.insertMany(docs);
+
+  console.log(`${currentYear} 年記帳本補齊完成`);
+};
+
 exports.getDefaultCities = async (userId) => {
   const citiesWithUser = defaultCities.map((city) => ({
     ...city,

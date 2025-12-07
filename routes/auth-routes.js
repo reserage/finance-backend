@@ -50,8 +50,11 @@ router.post('/login', (req, res, next) => {
       return res.status(401).json({ success: false, message: info.message });
     }
 
-    req.logIn(user, (err) => {
+    req.logIn(user, async (err) => {
       if (err) return next(err);
+
+      await defaultItem.ensureCurrentYearBooks(user._id);
+
       return res.json({ success: true, user });
     });
   })(req, res, next);
@@ -103,11 +106,10 @@ router.get(
   passport.authenticate('google', {
     failureRedirect: `${process.env.FRONTEND_API_URL}/auth/login`,
   }),
-  (req, res) => {
+  async (req, res) => {
+    await defaultItem.ensureCurrentYearBooks(req.user._id);
     res.redirect(process.env.FRONTEND_API_URL); // 登入成功後，導向前端的網址
   }
 );
-
-
 
 module.exports = router;

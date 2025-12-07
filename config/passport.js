@@ -18,7 +18,7 @@ passport.deserializeUser(async (_id, done) => {
   done(null, foundUser); // 將資料庫的資料，放在req.user內
 });
 
-// google登入?和註冊策略
+// google登入和註冊策略
 passport.use(
   new GoogleStrategy(
     {

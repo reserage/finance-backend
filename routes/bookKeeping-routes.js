@@ -79,4 +79,37 @@ router.patch("/edit", checkLogin, async (req, res) => {
   }
 });
 
+router.get('/years', async (req, res) => {
+  try {
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: '未登入', success: false });
+    }
+
+    const userId = req.user._id;
+
+    // 從 BookKeeping 尋找所有屬於該用戶的 date
+    const books = await BookKeeping.find({ user: userId }, { date: 1 });
+
+    if (!books.length) {
+      return res.json([]);
+    }
+
+    // 抽出年份
+    const years = new Set();
+    books.forEach(b => {
+      const year = new Date(b.date).getFullYear();
+      years.add(year);
+    });
+
+    // 回傳排序後的陣列
+    const sorted = Array.from(years).sort((a, b) => a - b).map(String);
+
+    res.json(sorted);
+
+  } catch (err) {
+    console.error('取得記帳本年份失敗:', err);
+    res.status(500).json({ message: '伺服器錯誤' });
+  }
+});
+
 module.exports = router;
