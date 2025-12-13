@@ -64,10 +64,12 @@ async function handleTimedCalendarEvents(events = []) {
 
     const startTime = new Date(event.start).toLocaleString('zh-TW', {
       hour12: false,
+      timeZone: 'Asia/Taipei',
     });
 
     const endTime = new Date(event.end).toLocaleString('zh-TW', {
       hour12: false,
+      timeZone: 'Asia/Taipei',
     });
 
     const message = {
