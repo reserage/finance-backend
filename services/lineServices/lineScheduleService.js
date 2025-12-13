@@ -195,7 +195,7 @@ async function handleAlldayCalendarEvents(events = []) {
       eventDate.getFullYear(),
       eventDate.getMonth(),
       eventDate.getDate(),
-      8,
+      9,
       0,
       0
     );
