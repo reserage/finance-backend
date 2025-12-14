@@ -47,10 +47,10 @@ const calendarEventSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    isDone:{
+    isDone: {
       type: Boolean,
       default: false,
-    }
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -114,6 +114,15 @@ calendarEventSchema.post('findOneAndUpdate', async function (doc, next) {
   if (!doc.user.lineId) return;
 
   eventSchedule.emit('eventChanged', doc);
+  next();
+});
+
+calendarEventSchema.post('findOneAndDelete', async function (doc, next) {
+  if (!doc) return next();
+
+  // 取消排程
+  eventSchedule.emit('eventDeleted', doc._id);
+
   next();
 });
 
