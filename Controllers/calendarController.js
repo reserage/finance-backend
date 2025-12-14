@@ -46,7 +46,18 @@ exports.createEvent = catchAsync(async (req, res, next) => {
     return next(new AppError('Missing required fields', 400));
   }
 
-  const newEvent = await CalendarEvent.create({ ...req.body, userId });
+  console.log('Creating event with data:', req.body);
+  const newEvent = await CalendarEvent.create({ 
+    userId,
+    title: req.body.title,
+    calendarId: req.body.calendarId,
+    start: req.body.start,
+    end: req.body.end,
+    isAllday: req.body.isAllday,
+    category: req.body.category,
+    location: req.body.location,
+    body: req.body.body,
+  });
 
   res.status(201).json({
     status: 'success',
