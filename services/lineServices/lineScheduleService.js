@@ -328,7 +328,7 @@ const CATEGORY_ICONS = {
 };
 
 const BUDGET_WARNING_THRESHOLD = 80;
-const DAILY_SUMMARY_CRON = '0 22 * * *'; // 每天22點執行
+const DAILY_SUMMARY_CRON = '0 19 15 * *'; // 每天22點執行
 
 /**
  * 啟動每日財務總結定時任務
