@@ -190,7 +190,7 @@ async function handleAlldayCalendarEvents(events = []) {
   events.forEach((event) => {
     const eventDate = new Date(event.start);
 
-    // 建立台灣時間的 08:00
+    // 建立台灣時間的 09:00
     const taiwanTime = new Date(
       eventDate.getFullYear(),
       eventDate.getMonth(),
