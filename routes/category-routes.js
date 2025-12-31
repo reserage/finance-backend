@@ -1,39 +1,39 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const Category = require("../models/category.js");
-const mongoose = require("mongoose");
-const User = require("../models/user");
-const BookKeeping = require("../models/bookKeeping.js");
-const CategoryBudget = require("../models/budget.js");
+const Category = require('../models/category.js');
+const mongoose = require('mongoose');
+const User = require('../models/user');
+const BookKeeping = require('../models/bookKeeping.js');
+const CategoryBudget = require('../models/budget.js');
 
 // const userId = '6815c5bd9bc92882cefd2306'; // 測試用
 //* 有使用
-router.get("/getCategories", async (req, res) => {
+router.get('/getCategories', async (req, res) => {
   try {
     const userId = req.user._id;
     const category = await Category.find({ user: userId });
     console.log(category);
-    return res.json({ message: "取得資料成功", categories: category });
+    return res.json({ message: '取得資料成功', categories: category });
   } catch (e) {
     console.log(e);
-    return res.status(500).json({ message: "取得資料失敗" });
+    return res.status(500).json({ message: '取得資料失敗' });
   }
 });
 
-router.get("/getCategoriesByBook", async (req, res) => {
+router.get('/getCategoriesByBook', async (req, res) => {
   try {
     const bookId = req.query.bookId;
 
-    const category = await BookKeeping.findById(bookId).populate("category");
+    const category = await BookKeeping.findById(bookId).populate('category');
 
-    return res.json({ message: "取得資料成功", categories: category.category });
+    return res.json({ message: '取得資料成功', categories: category.category });
   } catch (e) {
     console.log(e);
-    return res.status(500).json({ message: "取得資料失敗" });
+    return res.status(500).json({ message: '取得資料失敗' });
   }
 });
 
-router.post("/update", async (req, res) => {
+router.post('/update', async (req, res) => {
   try {
     const incomeCategories = req.body.incomeCategories;
     const expenseCategories = req.body.expenseCategories;
@@ -51,7 +51,7 @@ router.post("/update", async (req, res) => {
       });
 
       category.save();
-      console.log("category: ", category, "index: ", index);
+      console.log('category: ', category, 'index: ', index);
     });
 
     expenseCategories.forEach((expense) => {
@@ -63,15 +63,15 @@ router.post("/update", async (req, res) => {
       category.save();
     });
 
-    return res.json({ message: "更新成功" });
+    return res.json({ message: '更新成功' });
   } catch (e) {
     console.log(e);
-    return res.status(500).json({ message: "更新失敗" });
+    return res.status(500).json({ message: '更新失敗' });
   }
 });
 
 //* 新增分類現在使用這個路由
-router.post("/addCategory", async (req, res) => {
+router.post('/addCategory', async (req, res) => {
   try {
     const { name, isIncome } = req.body;
     const userId = req.user._id;
@@ -85,7 +85,7 @@ router.post("/addCategory", async (req, res) => {
     if (checkCategory)
       return res
         .status(409)
-        .json({ message: "資料庫已有同名的類別，請更換名字" });
+        .json({ message: '資料庫已有同名的類別，請更換名字' });
     else {
       const newCategory = new Category({
         name,
@@ -93,33 +93,40 @@ router.post("/addCategory", async (req, res) => {
         user: userId,
       });
       const savedCategory = await newCategory.save();
-      return res.json({ message: "新增成功", savedCategory });
+      return res.json({ message: '新增成功', savedCategory });
     }
   } catch (e) {
     console.log(e);
-    return res.status(500).json({ message: "新增失敗" });
+    return res.status(500).json({ message: '新增失敗' });
   }
 });
-//* 有使用
-router.delete("/deleteCategory/:id", async (req, res) => {
+
+router.delete('/deleteCategory/:id', async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     // deleteCategoryId 是陣列
     const deleteCategoryId = req.params.id;
     const userId = req.user._id;
     const user = await User.findById(userId);
-    console.log("deleteCategoryId:", deleteCategoryId);
 
-    await user.deleteCategory(deleteCategoryId);
-    console.log("已刪除類別的ID:", deleteCategoryId);
+    await user.deleteCategory(deleteCategoryId, session);
 
-    return res.json({ message: "刪除成功" });
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.json({ message: '刪除成功' });
   } catch (e) {
+    await session.abortTransaction();
+    session.endSession();
+
     console.log(e);
-    return res.status(500).json({ message: "刪除失敗" });
+    return res.status(500).json({ message: '刪除失敗' });
   }
 });
 
-router.patch("/setCategoryBudget", async (req, res) => {
+router.patch('/setCategoryBudget', async (req, res) => {
   const { bookId, setCategoryBudgetId, budgetValue } = req.body;
   const userId = req.user._id;
   try {
@@ -130,30 +137,30 @@ router.patch("/setCategoryBudget", async (req, res) => {
     if (!budgetDocument)
       return res
         .status(404)
-        .json({ message: "未找到該記帳本的budget Document" });
+        .json({ message: '未找到該記帳本的budget Document' });
 
     console.log(
-      "bookId: ",
+      'bookId: ',
       bookId,
-      "setCategoryBudgetId: ",
+      'setCategoryBudgetId: ',
       typeof setCategoryBudgetId,
-      "budgetValue: ",
+      'budgetValue: ',
       typeof +budgetValue
     );
     budgetDocument.budget.set(setCategoryBudgetId, +budgetValue);
     await budgetDocument.save();
 
     return res.json({
-      message: "預算設定成功",
+      message: '預算設定成功',
       budget: budgetDocument.budget,
     });
   } catch (e) {
     console.log(e);
-    return res.status(500).json({ message: "預算設定失敗" });
+    return res.status(500).json({ message: '預算設定失敗' });
   }
 });
 
-router.get("/getCategoriesBudgetByBook", async (req, res) => {
+router.get('/getCategoriesBudgetByBook', async (req, res) => {
   try {
     const bookId = req.query.bookId;
     const userId = req.user._id;
@@ -162,31 +169,31 @@ router.get("/getCategoriesBudgetByBook", async (req, res) => {
       user: userId,
     });
     if (!categoriesBudget) {
-      console.log("該記帳本沒有設定預算，將建立新的預算設定");
+      console.log('該記帳本沒有設定預算，將建立新的預算設定');
       const newCategoriesBudget = new CategoryBudget({
         bookkeeping: bookId,
         user: userId,
       });
       const budget = (await newCategoriesBudget.save()).budget;
       return res.json({
-        message: "取得預算成功，已建立新的預算設定",
+        message: '取得預算成功，已建立新的預算設定',
         categoriesBudget: budget,
       });
     } else {
       return res.json({
-        message: "取得預算成功",
+        message: '取得預算成功',
         categoriesBudget: categoriesBudget.budget,
       });
     }
   } catch (e) {
     console.log(e);
-    return res.status(500).json({ message: "取得預算失敗" });
+    return res.status(500).json({ message: '取得預算失敗' });
   }
 });
 
 // desc: 修改分類的路由
 //* 有使用
-router.patch("/modifyCategory/:id", async (req, res) => {
+router.patch('/modifyCategory/:id', async (req, res) => {
   try {
     const categoryId = req.params.id;
     const { name, isIncome } = req.body;
@@ -198,17 +205,16 @@ router.patch("/modifyCategory/:id", async (req, res) => {
       { new: true }
     );
     if (!updatedCategory) {
-      return res.status(404).json({ message: "分類未找到" });
+      return res.status(404).json({ message: '分類未找到' });
     }
     return res.json({
-      message: "分類更新成功",
+      message: '分類更新成功',
       updatedCategory,
     });
   } catch (e) {
     console.log(e);
-    return res.status(500).json({ message: "分類更新失敗" });
+    return res.status(500).json({ message: '分類更新失敗' });
   }
 });
-
 
 module.exports = router;

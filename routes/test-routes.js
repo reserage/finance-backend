@@ -179,15 +179,17 @@ router.delete('/deleteRecordByBook', async (req, res) => {
       { new: true, session }
     );
 
-    await Budget.updateOne(
-      { user: userId, bookkeeping: bookId },
-      {
-        $inc: {
-          [`totalsByCategory.${categoryId}`]: -amount,
+    if (categoryId != '') {
+      await Budget.updateOne(
+        { user: userId, bookkeeping: bookId },
+        {
+          $inc: {
+            [`totalsByCategory.${categoryId}`]: -amount,
+          },
         },
-      },
-      { session }
-    );
+        { session }
+      );
+    }
 
     await session.commitTransaction();
     session.endSession();

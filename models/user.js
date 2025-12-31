@@ -63,8 +63,10 @@ userSchema.methods.getCategories = async function () {
   return await Category.find({ user: this._id });
 };
 
-userSchema.methods.deleteCategory = async function (categoryId) {
-  const deletedCategory = await Category.findByIdAndDelete(categoryId);
+userSchema.methods.deleteCategory = async function (categoryId, session) {
+  const deletedCategory = await Category.findByIdAndDelete(categoryId, {
+    session,
+  });
   return deletedCategory;
 };
 
